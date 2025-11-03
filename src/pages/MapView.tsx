@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileNav } from '@/components/MobileNav';
+import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Info } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Info } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
 import { Card } from '@/components/ui/card';
 

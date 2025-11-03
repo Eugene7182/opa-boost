@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileNav } from '@/components/MobileNav';
+import { BackButton } from '@/components/BackButton';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, TrendingUp, DollarSign, PieChart, Package, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { TrendingUp, DollarSign, PieChart, Package, ChevronRight } from 'lucide-react';
 
 export default function Analytics() {
   const { user, userRole } = useAuth();
-  const navigate = useNavigate();
   const [stats, setStats] = useState({
     todaySales: 0,
     todayBonus: 0,

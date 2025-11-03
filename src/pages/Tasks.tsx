@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { BackButton } from '@/components/BackButton';
 import { MobileNav } from '@/components/MobileNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,8 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface Task {
@@ -27,7 +27,6 @@ interface Task {
 }
 
 export default function Tasks() {
-  const navigate = useNavigate();
   const { user, userRole } = useAuth();
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -190,9 +189,7 @@ export default function Tasks() {
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            <BackButton to="/dashboard" />
             <h1 className="text-xl font-bold">Задачи</h1>
           </div>
           

@@ -17,14 +17,10 @@ import BonusSchemes from "./pages/BonusSchemes";
 import Motivations from "./pages/Motivations";
 import RetailPrices from "./pages/RetailPrices";
 import KefSchemes from "./pages/KefSchemes";
-import MarketShares from "./pages/MarketShares";
 import Inventories from "./pages/Inventories";
-import Competitors from "./pages/Competitors";
 import MapView from "./pages/MapView";
-import CompetitorTracking from "./pages/CompetitorTracking";
 import Chat from "./pages/Chat";
 import Tasks from "./pages/Tasks";
-import Meetings from "./pages/Meetings";
 import Training from "./pages/Training";
 import Users from "./pages/Users";
 import OrgStructure from "./pages/OrgStructure";
@@ -158,16 +154,6 @@ const App = () => (
               }
             />
             <Route
-              path="/market-shares"
-              element={
-                <ProtectedRoute>
-                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
-                    <MarketShares />
-                  </RoleGuard>
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/inventories"
               element={
                 <ProtectedRoute>
@@ -178,31 +164,11 @@ const App = () => (
               }
             />
             <Route
-              path="/competitors"
-              element={
-                <ProtectedRoute>
-                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
-                    <Competitors />
-                  </RoleGuard>
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/map"
               element={
                 <ProtectedRoute>
                   <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
                     <MapView />
-                  </RoleGuard>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/competitor-tracking"
-              element={
-                <ProtectedRoute>
-                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
-                    <CompetitorTracking />
                   </RoleGuard>
                 </ProtectedRoute>
               }
@@ -223,16 +189,6 @@ const App = () => (
                 <ProtectedRoute>
                   <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
                     <Tasks />
-                  </RoleGuard>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/meetings"
-              element={
-                <ProtectedRoute>
-                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'trainer']}>
-                    <Meetings />
                   </RoleGuard>
                 </ProtectedRoute>
               }

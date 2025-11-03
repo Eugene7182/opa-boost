@@ -5,9 +5,9 @@ import { MobileNav } from '@/components/MobileNav';
 import { getPendingSales } from '@/lib/offline';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/BackButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
 
 interface Sale {
   id: string;

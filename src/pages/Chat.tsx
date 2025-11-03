@@ -4,9 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { MobileNav } from '@/components/MobileNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/BackButton';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Send, Users2, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Send, Users2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 

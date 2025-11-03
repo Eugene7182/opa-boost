@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { BackButton } from '@/components/BackButton';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Target } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, Target } from 'lucide-react';
 
 interface Motivation {
   id: string;
