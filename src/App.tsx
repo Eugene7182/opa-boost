@@ -17,6 +17,8 @@ import BonusSchemes from "./pages/BonusSchemes";
 import Motivations from "./pages/Motivations";
 import RetailPrices from "./pages/RetailPrices";
 import KefSchemes from "./pages/KefSchemes";
+import MarketShares from "./pages/MarketShares";
+import Inventories from "./pages/Inventories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -138,6 +140,26 @@ const App = () => (
                 <ProtectedRoute>
                   <RoleGuard allowedRoles={['admin', 'office']}>
                     <KefSchemes />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/market-shares"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
+                    <MarketShares />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inventories"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
+                    <Inventories />
                   </RoleGuard>
                 </ProtectedRoute>
               }

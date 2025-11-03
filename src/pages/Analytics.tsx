@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MobileNav } from '@/components/MobileNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, TrendingUp, DollarSign } from 'lucide-react';
+import { ArrowLeft, TrendingUp, DollarSign, PieChart, Package, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Analytics() {
@@ -74,6 +74,28 @@ export default function Analytics() {
       </header>
 
       <main className="p-4 space-y-6">
+        {/* Quick Links to Advanced Analytics */}
+        <section className="grid grid-cols-2 gap-3">
+          <Card className="p-4 cursor-pointer hover:bg-accent/5 transition-colors" onClick={() => navigate('/market-shares')}>
+            <div className="flex items-center justify-between">
+              <div>
+                <PieChart className="w-5 h-5 text-primary mb-2" />
+                <p className="font-semibold">Доли рынка</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+          </Card>
+          <Card className="p-4 cursor-pointer hover:bg-accent/5 transition-colors" onClick={() => navigate('/inventories')}>
+            <div className="flex items-center justify-between">
+              <div>
+                <Package className="w-5 h-5 text-primary mb-2" />
+                <p className="font-semibold">Остатки</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+          </Card>
+        </section>
+
         <section className="space-y-3">
           <h2 className="text-lg font-semibold px-2">Сегодня</h2>
           <div className="grid grid-cols-2 gap-3">

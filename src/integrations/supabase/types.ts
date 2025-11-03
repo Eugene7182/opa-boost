@@ -61,6 +61,51 @@ export type Database = {
           },
         ]
       }
+      inventories: {
+        Row: {
+          created_at: string
+          id: string
+          last_updated: string
+          product_id: string
+          quantity: number
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          product_id: string
+          quantity?: number
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          product_id?: string
+          quantity?: number
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventories_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kef_endings: {
         Row: {
           created_at: string
@@ -149,6 +194,70 @@ export type Database = {
             columns: ["region_id"]
             isOneToOne: false
             referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_shares: {
+        Row: {
+          competitor_sales: number
+          created_at: string
+          id: string
+          market_share_percent: number | null
+          our_sales: number
+          period_end: string
+          period_start: string
+          product_id: string
+          region_id: string | null
+          store_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          competitor_sales?: number
+          created_at?: string
+          id?: string
+          market_share_percent?: number | null
+          our_sales?: number
+          period_end: string
+          period_start: string
+          product_id: string
+          region_id?: string | null
+          store_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          competitor_sales?: number
+          created_at?: string
+          id?: string
+          market_share_percent?: number | null
+          our_sales?: number
+          period_end?: string
+          period_start?: string
+          product_id?: string
+          region_id?: string | null
+          store_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_shares_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_shares_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_shares_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
