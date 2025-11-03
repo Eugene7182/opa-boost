@@ -15,6 +15,7 @@ const productSchema = z.object({
   name: z.string().trim().min(1, { message: 'Название не может быть пустым' }).max(200, { message: 'Название слишком длинное (макс. 200 символов)' }),
   category: z.string().trim().min(1, { message: 'Категория не может быть пустой' }).max(100, { message: 'Категория слишком длинная (макс. 100 символов)' }),
   price: z.number().positive({ message: 'Цена должна быть положительной' }).max(1000000, { message: 'Цена слишком велика' }),
+  storage_capacity: z.string().optional(),
 });
 
 interface Product {
@@ -22,6 +23,7 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  storage_capacity?: string | null;
   active: boolean;
 }
 
@@ -31,7 +33,7 @@ export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({ name: '', category: '', price: '' });
+  const [formData, setFormData] = useState({ name: '', category: '', price: '', storage_capacity: '' });
 
   useEffect(() => {
     loadProducts();
@@ -54,6 +56,7 @@ export default function Products() {
       name: formData.name,
       category: formData.category,
       price: parseFloat(formData.price),
+      storage_capacity: formData.storage_capacity || undefined,
     });
 
     if (!validation.success) {
@@ -70,6 +73,7 @@ export default function Products() {
       name: validation.data.name,
       category: validation.data.category,
       price: validation.data.price,
+      storage_capacity: validation.data.storage_capacity || null,
       active: true,
     };
 
@@ -100,7 +104,7 @@ export default function Products() {
 
     setDialogOpen(false);
     setEditingProduct(null);
-    setFormData({ name: '', category: '', price: '' });
+    setFormData({ name: '', category: '', price: '', storage_capacity: '' });
     loadProducts();
   };
 
@@ -110,6 +114,7 @@ export default function Products() {
       name: product.name,
       category: product.category,
       price: product.price.toString(),
+      storage_capacity: product.storage_capacity || '',
     });
     setDialogOpen(true);
   };
@@ -142,7 +147,7 @@ export default function Products() {
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="icon" onClick={() => { setEditingProduct(null); setFormData({ name: '', category: '', price: '' }); }}>
+              <Button size="icon" onClick={() => { setEditingProduct(null); setFormData({ name: '', category: '', price: '', storage_capacity: '' }); }}>
                 <Plus className="w-5 h-5" />
               </Button>
             </DialogTrigger>
@@ -177,6 +182,14 @@ export default function Products() {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Память (ГБ)</Label>
+                  <Input
+                    value={formData.storage_capacity}
+                    onChange={(e) => setFormData({ ...formData, storage_capacity: e.target.value })}
+                    placeholder="64, 128, 256, 512"
+                  />
+                </div>
                 <Button type="submit" className="w-full">
                   {editingProduct ? 'Обновить' : 'Создать'}
                 </Button>
@@ -193,6 +206,9 @@ export default function Products() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{product.name}</h3>
                 <p className="text-sm text-muted-foreground">{product.category}</p>
+                {product.storage_capacity && (
+                  <p className="text-sm text-muted-foreground">Память: {product.storage_capacity} ГБ</p>
+                )}
                 <p className="text-xl font-bold mt-1">{product.price} ₸</p>
               </div>
               <div className="flex gap-2">

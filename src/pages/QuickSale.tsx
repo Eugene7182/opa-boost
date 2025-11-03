@@ -24,6 +24,7 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  storage_capacity?: string | null;
 }
 
 export default function QuickSale() {
@@ -32,6 +33,7 @@ export default function QuickSale() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [selectedMemory, setSelectedMemory] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userStoreId, setUserStoreId] = useState<string | null>(null);
@@ -169,6 +171,7 @@ export default function QuickSale() {
       }
 
       setSelectedProduct('');
+      setSelectedMemory('');
       setQuantity(1);
       navigate('/sales/history');
     } catch (error: any) {
@@ -201,7 +204,7 @@ export default function QuickSale() {
           <Card className="p-6 space-y-4">
             <div className="space-y-2">
               <Label>Продукт</Label>
-              <Select value={selectedProduct} onValueChange={setSelectedProduct} required>
+              <Select value={selectedProduct} onValueChange={(value) => { setSelectedProduct(value); setSelectedMemory(''); }} required>
                 <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Выберите продукт" />
                 </SelectTrigger>
@@ -214,6 +217,27 @@ export default function QuickSale() {
                 </SelectContent>
               </Select>
             </div>
+
+            {selectedProductData?.storage_capacity && (
+              <div className="space-y-2">
+                <Label>Память (ГБ)</Label>
+                <Select value={selectedMemory} onValueChange={setSelectedMemory} required>
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Выберите память" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectedProductData.storage_capacity.split(',').map((memory: string) => {
+                      const memoryTrim = memory.trim();
+                      return (
+                        <SelectItem key={memoryTrim} value={memoryTrim}>
+                          {memoryTrim} ГБ
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Количество</Label>
@@ -260,7 +284,7 @@ export default function QuickSale() {
           <Button
             type="submit"
             className="w-full h-14 text-lg font-semibold"
-            disabled={loading || !selectedProduct}
+            disabled={loading || !selectedProduct || (selectedProductData?.storage_capacity && !selectedMemory)}
           >
             {loading ? 'Обработка...' : 'Оформить продажу'}
           </Button>
