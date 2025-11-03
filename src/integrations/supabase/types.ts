@@ -61,6 +61,98 @@ export type Database = {
           },
         ]
       }
+      kef_endings: {
+        Row: {
+          created_at: string
+          end_date: string
+          ended_by: string | null
+          id: string
+          kef_scheme_id: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          ended_by?: string | null
+          id?: string
+          kef_scheme_id: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          ended_by?: string | null
+          id?: string
+          kef_scheme_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kef_endings_kef_scheme_id_fkey"
+            columns: ["kef_scheme_id"]
+            isOneToOne: false
+            referencedRelation: "kef_schemes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kef_schemes: {
+        Row: {
+          active: boolean
+          coefficient: number
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          product_id: string | null
+          region_id: string | null
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          coefficient: number
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          product_id?: string | null
+          region_id?: string | null
+          start_date?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          coefficient?: number
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          product_id?: string | null
+          region_id?: string | null
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kef_schemes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kef_schemes_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       motivations: {
         Row: {
           active: boolean
@@ -283,6 +375,47 @@ export type Database = {
             columns: ["network_id"]
             isOneToOne: false
             referencedRelation: "networks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retail_prices: {
+        Row: {
+          active: boolean
+          created_at: string
+          end_date: string | null
+          id: string
+          price: number
+          product_id: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          price: number
+          product_id: string
+          start_date?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          price?: number
+          product_id?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retail_prices_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]

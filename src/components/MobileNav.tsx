@@ -9,7 +9,9 @@ import {
   Building2,
   Users,
   GraduationCap,
-  MessageSquare
+  MessageSquare,
+  Tag,
+  Calculator
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -32,6 +34,8 @@ export const MobileNav = () => {
     { path: '/sales/history', icon: History, label: 'История', roles: ['admin', 'office', 'supervisor', 'promoter'] },
     { path: '/analytics', icon: BarChart3, label: 'Аналитика', roles: ['admin', 'office', 'supervisor'] },
     { path: '/products', icon: Package, label: 'Продукты', roles: ['admin', 'office'] },
+    { path: '/retail-prices', icon: Tag, label: 'Прайс-книга', roles: ['admin', 'office'] },
+    { path: '/kef', icon: Calculator, label: 'КЭФ', roles: ['admin', 'office'] },
     { path: '/bonus', icon: Gift, label: 'Бонусы', roles: ['admin', 'office'] },
     { path: '/motivations', icon: Target, label: 'Мотивации', roles: ['admin', 'office'] },
     { path: '/office/structure', icon: Building2, label: 'Структура', roles: ['admin', 'office'] },
