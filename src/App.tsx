@@ -25,6 +25,7 @@ import CompetitorTracking from "./pages/CompetitorTracking";
 import Chat from "./pages/Chat";
 import Tasks from "./pages/Tasks";
 import Meetings from "./pages/Meetings";
+import Training from "./pages/Training";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -227,6 +228,14 @@ const App = () => (
                   <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'trainer']}>
                     <Meetings />
                   </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/training"
+              element={
+                <ProtectedRoute>
+                  <Training />
                 </ProtectedRoute>
               }
             />
