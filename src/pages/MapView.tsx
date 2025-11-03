@@ -22,7 +22,6 @@ interface CompetitorTracking {
 }
 
 export default function MapView() {
-  const navigate = useNavigate();
   const [stores, setStores] = useState<Store[]>([]);
   const [tracking, setTracking] = useState<CompetitorTracking[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
@@ -165,9 +164,7 @@ export default function MapView() {
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/competitors')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          <BackButton to="/dashboard" />
           <h1 className="text-xl font-bold">Карта Казахстана</h1>
         </div>
       </header>
@@ -227,14 +224,6 @@ export default function MapView() {
                 <p className="text-sm text-muted-foreground">Нет данных о конкурентах</p>
               )}
             </div>
-
-            <Button 
-              className="w-full mt-4" 
-              variant="outline"
-              onClick={() => navigate(`/stores/${selectedStore.id}`)}
-            >
-              Подробнее о магазине
-            </Button>
           </Card>
         )}
       </main>

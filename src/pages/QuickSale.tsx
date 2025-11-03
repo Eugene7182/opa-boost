@@ -30,7 +30,6 @@ interface Product {
 export default function QuickSale() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [selectedMemory, setSelectedMemory] = useState<string>('');
@@ -173,7 +172,7 @@ export default function QuickSale() {
       setSelectedProduct('');
       setSelectedMemory('');
       setQuantity(1);
-      navigate('/sales/history');
+      // Успешно сохранено - можно вернуться к истории продаж при необходимости
     } catch (error: any) {
       toast({
         title: 'Ошибка',
@@ -192,9 +191,7 @@ export default function QuickSale() {
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          <BackButton to="/dashboard" />
           <h1 className="text-xl font-bold">Быстрая продажа</h1>
         </div>
       </header>

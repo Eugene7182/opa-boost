@@ -26,7 +26,6 @@ interface Message {
 }
 
 export default function Chat() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -147,9 +146,7 @@ export default function Chat() {
         <header className="bg-card border-b border-border p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
+              <BackButton to="/dashboard" />
               <h1 className="text-xl font-bold">Чаты</h1>
             </div>
             <Button size="icon" variant="ghost">
@@ -198,9 +195,7 @@ export default function Chat() {
     <div className="min-h-screen bg-background flex flex-col pb-20">
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => setSelectedConv(null)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          <BackButton />
           <div className="flex-1">
             <h1 className="text-lg font-bold">{currentConv?.title || 'Чат'}</h1>
             <p className="text-xs text-muted-foreground">{currentConv?.type}</p>

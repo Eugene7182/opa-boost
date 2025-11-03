@@ -22,7 +22,6 @@ interface Motivation {
 }
 
 export default function Motivations() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [motivations, setMotivations] = useState<Motivation[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -85,9 +84,7 @@ export default function Motivations() {
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            <BackButton to="/dashboard" />
             <h1 className="text-xl font-bold">Мотивации</h1>
           </div>
           

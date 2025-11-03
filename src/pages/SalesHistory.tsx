@@ -24,7 +24,6 @@ interface Sale {
 
 export default function SalesHistory() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
@@ -69,9 +68,7 @@ export default function SalesHistory() {
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          <BackButton to="/dashboard" />
           <h1 className="text-xl font-bold">История продаж</h1>
         </div>
       </header>

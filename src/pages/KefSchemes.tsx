@@ -36,7 +36,6 @@ interface KefScheme {
 }
 
 export default function KefSchemes() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [schemes, setSchemes] = useState<KefScheme[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -146,9 +145,7 @@ export default function KefSchemes() {
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            <BackButton to="/dashboard" />
             <h1 className="text-xl font-bold">КЭФ</h1>
           </div>
           

@@ -28,7 +28,6 @@ interface RetailPrice {
 }
 
 export default function RetailPrices() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [prices, setPrices] = useState<RetailPrice[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -108,9 +107,7 @@ export default function RetailPrices() {
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            <BackButton to="/dashboard" />
             <h1 className="text-xl font-bold">Прайс-книга</h1>
           </div>
           

@@ -65,9 +65,7 @@ export default function Analytics() {
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          <BackButton to="/dashboard" />
           <h1 className="text-xl font-bold">Аналитика</h1>
         </div>
       </header>
@@ -75,16 +73,15 @@ export default function Analytics() {
       <main className="p-4 space-y-6">
         {/* Quick Links to Advanced Analytics */}
         <section className="grid grid-cols-2 gap-3">
-          <Card className="p-4 cursor-pointer hover:bg-accent/5 transition-colors" onClick={() => navigate('/market-shares')}>
+          <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <PieChart className="w-5 h-5 text-primary mb-2" />
-                <p className="font-semibold">Доли рынка</p>
+                <p className="font-semibold text-muted-foreground">Доли рынка (скоро)</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </div>
           </Card>
-          <Card className="p-4 cursor-pointer hover:bg-accent/5 transition-colors" onClick={() => navigate('/inventories')}>
+          <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <Package className="w-5 h-5 text-primary mb-2" />

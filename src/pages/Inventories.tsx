@@ -32,7 +32,6 @@ interface Inventory {
 }
 
 export default function Inventories() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [inventories, setInventories] = useState<Inventory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -132,9 +131,7 @@ export default function Inventories() {
       <header className="bg-card border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/analytics')}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            <BackButton to="/dashboard" />
             <h1 className="text-xl font-bold">Остатки</h1>
           </div>
           
