@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 
 export default function DashboardRegion() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodPreset>('this_month');
   const [regionId, setRegionId] = useState<string>('');
@@ -212,8 +214,8 @@ export default function DashboardRegion() {
     } catch (error) {
       console.error('Error loading dashboard:', error);
       toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить данные',
+        title: t('error.title'),
+        description: t('error.loadFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -236,18 +238,18 @@ export default function DashboardRegion() {
       {/* Фильтры */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Фильтры</CardTitle>
+          <CardTitle className="text-base">{t('dashboard.filters')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Select value={period} onValueChange={(v) => setPeriod(v as PeriodPreset)}>
             <SelectTrigger>
-              <SelectValue placeholder="Период" />
+              <SelectValue placeholder={t('filters.period')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="this_week">Эта неделя</SelectItem>
-              <SelectItem value="last_week">Прошлая неделя</SelectItem>
-              <SelectItem value="this_month">Этот месяц</SelectItem>
-              <SelectItem value="last_month">Прошлый месяц</SelectItem>
+              <SelectItem value="this_week">{t('dashboard.thisWeek')}</SelectItem>
+              <SelectItem value="last_week">{t('dashboard.lastWeek')}</SelectItem>
+              <SelectItem value="this_month">{t('dashboard.thisMonth')}</SelectItem>
+              <SelectItem value="last_month">{t('dashboard.lastMonth')}</SelectItem>
             </SelectContent>
           </Select>
         </CardContent>
@@ -257,25 +259,25 @@ export default function DashboardRegion() {
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Выручка</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.revenue')}</p>
             <p className="text-2xl font-bold mt-1">{formatKZT(kpis.revenue)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Количество</p>
-            <p className="text-2xl font-bold mt-1">{kpis.quantity} шт</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.quantity')}</p>
+            <p className="text-2xl font-bold mt-1">{kpis.quantity} {t('dashboard.pcs')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Средний чек</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.avgCheck')}</p>
             <p className="text-2xl font-bold mt-1">{formatKZT(kpis.avgCheck)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Бонусы</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.bonuses')}</p>
             <p className="text-2xl font-bold mt-1">{formatKZT(kpis.bonuses)}</p>
           </CardContent>
         </Card>
@@ -285,11 +287,11 @@ export default function DashboardRegion() {
       {wowComparison && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Неделя к неделе (WoW)</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.wow')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Выручка</span>
+              <span className="text-sm">{t('dashboard.revenue')}</span>
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{formatKZT(wowComparison.current.revenue)}</span>
                 <span className={`text-sm flex items-center ${wowComparison.percentChange.revenue >= 0 ? 'text-success' : 'text-destructive'}`}>
@@ -299,9 +301,9 @@ export default function DashboardRegion() {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">Количество</span>
+              <span className="text-sm">{t('dashboard.quantity')}</span>
               <div className="flex items-center gap-2">
-                <span className="font-semibold">{wowComparison.current.quantity} шт</span>
+                <span className="font-semibold">{wowComparison.current.quantity} {t('dashboard.pcs')}</span>
                 <span className={`text-sm flex items-center ${wowComparison.percentChange.quantity >= 0 ? 'text-success' : 'text-destructive'}`}>
                   {wowComparison.percentChange.quantity >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                   {formatPercent(wowComparison.percentChange.quantity)}
@@ -315,11 +317,11 @@ export default function DashboardRegion() {
       {momComparison && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Месяц к месяцу (MoM)</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.mom')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Выручка</span>
+              <span className="text-sm">{t('dashboard.revenue')}</span>
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{formatKZT(momComparison.current.revenue)}</span>
                 <span className={`text-sm flex items-center ${momComparison.percentChange.revenue >= 0 ? 'text-success' : 'text-destructive'}`}>
@@ -336,7 +338,7 @@ export default function DashboardRegion() {
       {dailyData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Выручка по дням</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.dailyRevenue')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
@@ -356,7 +358,7 @@ export default function DashboardRegion() {
       {topModels.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Топ-5 моделей</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.topModels')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -365,7 +367,7 @@ export default function DashboardRegion() {
                   <span className="text-sm font-medium">{m.name}</span>
                   <div className="text-right">
                     <p className="text-sm font-semibold">{formatKZT(m.revenue)}</p>
-                    <p className="text-xs text-muted-foreground">{m.quantity} шт</p>
+                    <p className="text-xs text-muted-foreground">{m.quantity} {t('dashboard.pcs')}</p>
                   </div>
                 </div>
               ))}
@@ -380,7 +382,7 @@ export default function DashboardRegion() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-warning" />
-              Низкие остатки
+              {t('dashboard.lowInventory')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -391,7 +393,7 @@ export default function DashboardRegion() {
                     <p className="text-sm font-medium">{(inv as any).products?.name}</p>
                     <p className="text-xs text-muted-foreground">{(inv as any).stores?.name}</p>
                   </div>
-                  <span className="text-sm font-semibold">{inv.quantity} шт</span>
+                  <span className="text-sm font-semibold">{inv.quantity} {t('dashboard.pcs')}</span>
                 </div>
               ))}
             </div>

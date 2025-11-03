@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,6 +10,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { toast } from '@/hooks/use-toast';
 
 export default function DashboardOrg() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodPreset>('this_month');
   const [regions, setRegions] = useState<any[]>([]);
@@ -174,8 +176,8 @@ export default function DashboardOrg() {
     } catch (error) {
       console.error('Error loading dashboard:', error);
       toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить данные',
+        title: t('error.title'),
+        description: t('error.loadFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -198,27 +200,27 @@ export default function DashboardOrg() {
       {/* Фильтры */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Фильтры</CardTitle>
+          <CardTitle className="text-base">{t('dashboard.filters')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Select value={period} onValueChange={(v) => setPeriod(v as PeriodPreset)}>
             <SelectTrigger>
-              <SelectValue placeholder="Период" />
+              <SelectValue placeholder={t('filters.period')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="this_week">Эта неделя</SelectItem>
-              <SelectItem value="last_week">Прошлая неделя</SelectItem>
-              <SelectItem value="this_month">Этот месяц</SelectItem>
-              <SelectItem value="last_month">Прошлый месяц</SelectItem>
+              <SelectItem value="this_week">{t('dashboard.thisWeek')}</SelectItem>
+              <SelectItem value="last_week">{t('dashboard.lastWeek')}</SelectItem>
+              <SelectItem value="this_month">{t('dashboard.thisMonth')}</SelectItem>
+              <SelectItem value="last_month">{t('dashboard.lastMonth')}</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={selectedRegion} onValueChange={setSelectedRegion}>
             <SelectTrigger>
-              <SelectValue placeholder="Регион" />
+              <SelectValue placeholder={t('dashboard.region')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Все регионы</SelectItem>
+              <SelectItem value="all">{t('dashboard.allRegions')}</SelectItem>
               {regions.map(r => (
                 <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
               ))}
@@ -227,10 +229,10 @@ export default function DashboardOrg() {
 
           <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
             <SelectTrigger>
-              <SelectValue placeholder="Сеть" />
+              <SelectValue placeholder={t('dashboard.network')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Все сети</SelectItem>
+              <SelectItem value="all">{t('dashboard.allNetworks')}</SelectItem>
               {networks.map(n => (
                 <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>
               ))}
@@ -243,25 +245,25 @@ export default function DashboardOrg() {
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Выручка</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.revenue')}</p>
             <p className="text-2xl font-bold mt-1">{formatKZT(kpis.revenue)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Количество</p>
-            <p className="text-2xl font-bold mt-1">{kpis.quantity} шт</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.quantity')}</p>
+            <p className="text-2xl font-bold mt-1">{kpis.quantity} {t('dashboard.pcs')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Средний чек</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.avgCheck')}</p>
             <p className="text-2xl font-bold mt-1">{formatKZT(kpis.avgCheck)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Бонусы</p>
+            <p className="text-xs text-muted-foreground">{t('dashboard.bonuses')}</p>
             <p className="text-2xl font-bold mt-1">{formatKZT(kpis.bonuses)}</p>
           </CardContent>
         </Card>
@@ -271,11 +273,11 @@ export default function DashboardOrg() {
       {wowComparison && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Неделя к неделе (WoW)</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.wow')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Выручка</span>
+              <span className="text-sm">{t('dashboard.revenue')}</span>
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{formatKZT(wowComparison.current.revenue)}</span>
                 <span className={`text-sm flex items-center ${wowComparison.percentChange.revenue >= 0 ? 'text-success' : 'text-destructive'}`}>
@@ -291,11 +293,11 @@ export default function DashboardOrg() {
       {momComparison && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Месяц к месяцу (MoM)</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.mom')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Выручка</span>
+              <span className="text-sm">{t('dashboard.revenue')}</span>
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{formatKZT(momComparison.current.revenue)}</span>
                 <span className={`text-sm flex items-center ${momComparison.percentChange.revenue >= 0 ? 'text-success' : 'text-destructive'}`}>
@@ -312,7 +314,7 @@ export default function DashboardOrg() {
       {dailyData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Выручка по дням</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.dailyRevenue')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
@@ -332,7 +334,7 @@ export default function DashboardOrg() {
       {regionData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">По регионам</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.byRegions')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -352,7 +354,7 @@ export default function DashboardOrg() {
       {networkData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">По сетям</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.byNetworks')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -374,7 +376,7 @@ export default function DashboardOrg() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-warning" />
-              Сигналы
+              {t('dashboard.alerts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
