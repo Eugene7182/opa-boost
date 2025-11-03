@@ -61,6 +61,128 @@ export type Database = {
           },
         ]
       }
+      competitor_products: {
+        Row: {
+          active: boolean
+          category: string | null
+          competitor_id: string
+          created_at: string
+          estimated_price: number | null
+          id: string
+          product_name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          competitor_id: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          product_name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          competitor_id?: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          product_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitor_products_competitor_id_fkey"
+            columns: ["competitor_id"]
+            isOneToOne: false
+            referencedRelation: "competitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitor_tracking: {
+        Row: {
+          competitor_id: string
+          created_at: string
+          id: string
+          last_seen: string | null
+          notes: string | null
+          presence_type: string
+          promoter_count: number | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          competitor_id: string
+          created_at?: string
+          id?: string
+          last_seen?: string | null
+          notes?: string | null
+          presence_type: string
+          promoter_count?: number | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          competitor_id?: string
+          created_at?: string
+          id?: string
+          last_seen?: string | null
+          notes?: string | null
+          presence_type?: string
+          promoter_count?: number | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitor_tracking_competitor_id_fkey"
+            columns: ["competitor_id"]
+            isOneToOne: false
+            referencedRelation: "competitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitor_tracking_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitors: {
+        Row: {
+          active: boolean
+          brand: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          brand?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          brand?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inventories: {
         Row: {
           created_at: string
@@ -587,6 +709,8 @@ export type Database = {
           code: string
           created_at: string
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           office_id: string
           updated_at: string
@@ -598,6 +722,8 @@ export type Database = {
           code: string
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           office_id: string
           updated_at?: string
@@ -609,6 +735,8 @@ export type Database = {
           code?: string
           created_at?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           office_id?: string
           updated_at?: string

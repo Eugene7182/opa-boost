@@ -19,6 +19,9 @@ import RetailPrices from "./pages/RetailPrices";
 import KefSchemes from "./pages/KefSchemes";
 import MarketShares from "./pages/MarketShares";
 import Inventories from "./pages/Inventories";
+import Competitors from "./pages/Competitors";
+import MapView from "./pages/MapView";
+import CompetitorTracking from "./pages/CompetitorTracking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -160,6 +163,36 @@ const App = () => (
                 <ProtectedRoute>
                   <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
                     <Inventories />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/competitors"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
+                    <Competitors />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/map"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
+                    <MapView />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/competitor-tracking"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
+                    <CompetitorTracking />
                   </RoleGuard>
                 </ProtectedRoute>
               }

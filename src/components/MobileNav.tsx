@@ -11,7 +11,9 @@ import {
   GraduationCap,
   MessageSquare,
   Tag,
-  Calculator
+  Calculator,
+  Users2,
+  Map
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -38,6 +40,8 @@ export const MobileNav = () => {
     { path: '/kef', icon: Calculator, label: 'КЭФ', roles: ['admin', 'office'] },
     { path: '/bonus', icon: Gift, label: 'Бонусы', roles: ['admin', 'office'] },
     { path: '/motivations', icon: Target, label: 'Мотивации', roles: ['admin', 'office'] },
+    { path: '/competitors', icon: Users2, label: 'Конкуренты', roles: ['admin', 'office', 'supervisor'] },
+    { path: '/map', icon: Map, label: 'Карта', roles: ['admin', 'office', 'supervisor'] },
     { path: '/office/structure', icon: Building2, label: 'Структура', roles: ['admin', 'office'] },
     { path: '/supervisor/requests', icon: Users, label: 'Заявки', roles: ['supervisor'] },
     { path: '/training/materials', icon: GraduationCap, label: 'Обучение', roles: ['admin', 'office', 'trainer'] },
