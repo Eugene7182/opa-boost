@@ -15,7 +15,9 @@ import {
   Users2,
   Map,
   CheckSquare,
-  Calendar
+  Calendar,
+  UserCircle,
+  Settings
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -48,8 +50,9 @@ export const MobileNav = () => {
     { path: '/meetings', icon: Calendar, label: 'Собрания', roles: ['admin', 'office', 'supervisor', 'trainer'] },
     { path: '/training', icon: GraduationCap, label: 'Обучение', roles: ['admin', 'office', 'supervisor', 'trainer', 'promoter'] },
     { path: '/chat', icon: MessageSquare, label: 'Чат', roles: ['admin', 'office', 'supervisor', 'promoter'] },
-    { path: '/office/structure', icon: Building2, label: 'Структура', roles: ['admin', 'office'] },
-    { path: '/supervisor/requests', icon: Users, label: 'Заявки', roles: ['supervisor'] },
+    { path: '/users', icon: Users, label: 'Пользователи', roles: ['admin', 'office'] },
+    { path: '/org-structure', icon: Settings, label: 'Оргструктура', roles: ['admin', 'office'] },
+    { path: '/profile', icon: UserCircle, label: 'Профиль', roles: ['admin', 'office', 'supervisor', 'trainer', 'promoter'] },
   ];
 
   const visibleItems = navItems.filter(item => 

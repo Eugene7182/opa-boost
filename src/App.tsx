@@ -26,6 +26,9 @@ import Chat from "./pages/Chat";
 import Tasks from "./pages/Tasks";
 import Meetings from "./pages/Meetings";
 import Training from "./pages/Training";
+import Users from "./pages/Users";
+import OrgStructure from "./pages/OrgStructure";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -236,6 +239,34 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Training />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office']}>
+                    <Users />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/org-structure"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office']}>
+                    <OrgStructure />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />
