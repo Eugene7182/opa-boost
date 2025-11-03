@@ -5,6 +5,7 @@ import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/ui/button';
 import { Info } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts';
 import { Card } from '@/components/ui/card';
 
 interface Store {
@@ -133,31 +134,27 @@ export default function MapView() {
 
   // Register a simplified Kazakhstan map
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const echarts = require('echarts');
-      
-      // Simplified Kazakhstan GeoJSON outline
-      const kazakhstanGeoJson = {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            properties: { name: 'Kazakhstan' },
-            geometry: {
-              type: 'Polygon',
-              coordinates: [[
-                [46.5, 42], [55, 41], [62, 42.5], [69, 41.5], [75, 42], [80, 43],
-                [85, 44], [87, 45.5], [87, 49], [85, 51], [83, 53], [80, 54],
-                [75, 54], [70, 55.5], [65, 55], [58, 54], [53, 53], [49, 52],
-                [47, 50], [46, 47], [46.5, 42]
-              ]],
-            },
+    // Simplified Kazakhstan GeoJSON outline
+    const kazakhstanGeoJson = {
+      type: 'FeatureCollection' as const,
+      features: [
+        {
+          type: 'Feature' as const,
+          properties: { name: 'Kazakhstan' },
+          geometry: {
+            type: 'Polygon' as const,
+            coordinates: [[
+              [46.5, 42], [55, 41], [62, 42.5], [69, 41.5], [75, 42], [80, 43],
+              [85, 44], [87, 45.5], [87, 49], [85, 51], [83, 53], [80, 54],
+              [75, 54], [70, 55.5], [65, 55], [58, 54], [53, 53], [49, 52],
+              [47, 50], [46, 47], [46.5, 42]
+            ]],
           },
-        ],
-      };
+        },
+      ],
+    };
 
-      echarts.registerMap('custom', kazakhstanGeoJson);
-    }
+    echarts.registerMap('custom', kazakhstanGeoJson);
   }, []);
 
   return (
