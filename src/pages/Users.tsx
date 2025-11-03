@@ -321,12 +321,12 @@ export default function Users() {
                 </div>
                 <div>
                   <Label>Магазин</Label>
-                  <Select value={formData.store_id} onValueChange={(value) => setFormData({ ...formData, store_id: value })}>
+                  <Select value={formData.store_id} onValueChange={(value) => setFormData({ ...formData, store_id: value === 'none' ? '' : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите магазин" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не назначен</SelectItem>
+                      <SelectItem value="none">Не назначен</SelectItem>
                       {stores.map((store: any) => (
                         <SelectItem key={store.id} value={store.id}>
                           {store.name} ({store.city})
@@ -337,12 +337,12 @@ export default function Users() {
                 </div>
                 <div>
                   <Label>Регион</Label>
-                  <Select value={formData.region_id} onValueChange={(value) => setFormData({ ...formData, region_id: value })}>
+                  <Select value={formData.region_id} onValueChange={(value) => setFormData({ ...formData, region_id: value === 'none' ? '' : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите регион" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не назначен</SelectItem>
+                      <SelectItem value="none">Не назначен</SelectItem>
                       {regions.map((region: any) => (
                         <SelectItem key={region.id} value={region.id}>
                           {region.name}
@@ -454,12 +454,12 @@ export default function Users() {
               </div>
               <div>
                 <Label>Магазин</Label>
-                <Select value={formData.store_id} onValueChange={(value) => setFormData({ ...formData, store_id: value })}>
+                <Select value={formData.store_id || 'none'} onValueChange={(value) => setFormData({ ...formData, store_id: value === 'none' ? '' : value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите магазин" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Не назначен</SelectItem>
+                    <SelectItem value="none">Не назначен</SelectItem>
                     {stores.map((store: any) => (
                       <SelectItem key={store.id} value={store.id}>
                         {store.name} ({store.city})
@@ -470,12 +470,12 @@ export default function Users() {
               </div>
               <div>
                 <Label>Регион</Label>
-                <Select value={formData.region_id} onValueChange={(value) => setFormData({ ...formData, region_id: value })}>
+                <Select value={formData.region_id || 'none'} onValueChange={(value) => setFormData({ ...formData, region_id: value === 'none' ? '' : value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите регион" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Не назначен</SelectItem>
+                    <SelectItem value="none">Не назначен</SelectItem>
                     {regions.map((region: any) => (
                       <SelectItem key={region.id} value={region.id}>
                         {region.name}

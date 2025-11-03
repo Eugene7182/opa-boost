@@ -21,26 +21,10 @@ serve(async (req) => {
   }
 
   try {
-    // Verify JWT token
+    // JWT is already verified by Supabase when verify_jwt = true
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Требуется авторизация' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Verify user is authenticated
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('Auth error:', authError);
-      return new Response(JSON.stringify({ error: 'Неверный токен авторизации' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -101,7 +85,7 @@ serve(async (req) => {
     // Build prompt for Hugging Face
     const prompt = `${systemPrompt}\n\n${messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n\n')}\n\nAssistant:`;
 
-    console.log('Calling Hugging Face API for user:', user.id);
+    console.log('Calling Hugging Face API...');
 
     const response = await fetch(HF_API_URL, {
       method: 'POST',
