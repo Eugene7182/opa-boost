@@ -8,97 +8,123 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* OPPO ColorOS Design System - #00a884 Primary */
+    /* OPPO ColorOS Theme - Light Mode */
     --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
-
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-
-    --primary: 168 100% 33%;
+    --popover-foreground: 222.2 84% 4.9%;
+    
+    /* OPPO Green Primary - #00a884 */
+    --primary: 162 100% 33%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 168 100% 28%;
-
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 10%;
-
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-
-    --accent: 168 100% 33%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --accent: 162 90% 45%;
     --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
     --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
+    --success-foreground: 0 0% 98%;
+    
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 168 100% 33%;
-
-    --radius: 0.875rem;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-oppo: 0 8px 24px rgba(0, 168, 132, 0.2);
+    --warning-foreground: 0 0% 98%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 162 100% 33%;
+    
+    --radius: 0.875rem; /* 14px - OPPO ColorOS */
+    
+    --chart-1: 162 100% 33%;
+    --chart-2: 210 100% 50%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    
+    /* Animations & Effects */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.12);
   }
 
   .dark {
-    --background: 0 0% 8%;
+    /* OPPO ColorOS Theme - Dark Mode */
+    --background: 222 47% 8%; /* Deep dark blue-grey */
     --foreground: 0 0% 98%;
-
-    --card: 0 0% 12%;
+    --card: 222 40% 12%;
     --card-foreground: 0 0% 98%;
-
-    --popover: 0 0% 12%;
+    --popover: 222 40% 10%;
     --popover-foreground: 0 0% 98%;
-
-    --primary: 168 100% 33%;
+    
+    /* OPPO Green Primary (slightly adjusted for dark) */
+    --primary: 162 90% 40%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 168 100% 38%;
-
-    --secondary: 0 0% 16%;
+    
+    --secondary: 217 32% 17%;
     --secondary-foreground: 0 0% 98%;
-
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 65%;
-
-    --accent: 168 100% 33%;
+    
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 162 80% 50%;
     --accent-foreground: 0 0% 100%;
-
+    
     --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 168 100% 33%;
-
-    --shadow-oppo: 0 8px 24px rgba(0, 168, 132, 0.3);
+    --destructive-foreground: 0 0% 98%;
+    
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 98%;
+    
+    --warning: 38 90% 60%;
+    --warning-foreground: 222 47% 8%;
+    
+    --border: 217 32% 20%;
+    --input: 217 32% 20%;
+    --ring: 162 90% 40%;
+    
+    --chart-1: 162 90% 40%;
+    --chart-2: 210 90% 60%;
+    --chart-3: 38 90% 60%;
+    --chart-4: 280 60% 65%;
+    --chart-5: 340 70% 60%;
+    
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
+    --shadow-elevated: 0 4px 24px rgba(0, 0, 0, 0.4);
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    transition: var(--transition-smooth);
   }
 
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* OPPO ColorOS smooth animations */
+  button, a, [role="button"] {
+    transition: var(--transition-smooth);
+  }
+  
+  /* Card shadows */
+  .card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  .card-elevated {
+    box-shadow: var(--shadow-elevated);
   }
 }

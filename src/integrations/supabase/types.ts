@@ -1305,6 +1305,150 @@ export type Database = {
           },
         ]
       }
+      test_assignments: {
+        Row: {
+          assigned_by: string
+          created_at: string
+          id: string
+          score: number | null
+          status: string
+          test_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by: string
+          created_at?: string
+          id?: string
+          score?: number | null
+          status?: string
+          test_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string
+          created_at?: string
+          id?: string
+          score?: number | null
+          status?: string
+          test_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_assignments_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_questions: {
+        Row: {
+          answer: string
+          body: string
+          created_at: string
+          id: string
+          options: Json
+          test_id: string
+        }
+        Insert: {
+          answer: string
+          body: string
+          created_at?: string
+          id?: string
+          options: Json
+          test_id: string
+        }
+        Update: {
+          answer?: string
+          body?: string
+          created_at?: string
+          id?: string
+          options?: Json
+          test_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_questions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_results: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          passed: boolean
+          score: number
+          test_id: string
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          id?: string
+          passed: boolean
+          score: number
+          test_id: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          passed?: boolean
+          score?: number
+          test_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_results_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tests: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          region_ids: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          region_ids?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          region_ids?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_materials: {
         Row: {
           active: boolean
@@ -1354,6 +1498,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      training_materials_new: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_path: string | null
+          id: string
+          region_ids: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          region_ids?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          region_ids?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       training_participants: {
         Row: {
