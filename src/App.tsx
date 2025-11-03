@@ -22,6 +22,9 @@ import Inventories from "./pages/Inventories";
 import Competitors from "./pages/Competitors";
 import MapView from "./pages/MapView";
 import CompetitorTracking from "./pages/CompetitorTracking";
+import Chat from "./pages/Chat";
+import Tasks from "./pages/Tasks";
+import Meetings from "./pages/Meetings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -193,6 +196,36 @@ const App = () => (
                 <ProtectedRoute>
                   <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
                     <CompetitorTracking />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
+                    <Chat />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
+                    <Tasks />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meetings"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'trainer']}>
+                    <Meetings />
                   </RoleGuard>
                 </ProtectedRoute>
               }

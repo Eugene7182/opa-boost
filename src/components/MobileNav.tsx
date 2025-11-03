@@ -13,7 +13,9 @@ import {
   Tag,
   Calculator,
   Users2,
-  Map
+  Map,
+  CheckSquare,
+  Calendar
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -42,10 +44,12 @@ export const MobileNav = () => {
     { path: '/motivations', icon: Target, label: 'Мотивации', roles: ['admin', 'office'] },
     { path: '/competitors', icon: Users2, label: 'Конкуренты', roles: ['admin', 'office', 'supervisor'] },
     { path: '/map', icon: Map, label: 'Карта', roles: ['admin', 'office', 'supervisor'] },
+    { path: '/tasks', icon: CheckSquare, label: 'Задачи', roles: ['admin', 'office', 'supervisor', 'promoter'] },
+    { path: '/meetings', icon: Calendar, label: 'Собрания', roles: ['admin', 'office', 'supervisor', 'trainer'] },
+    { path: '/chat', icon: MessageSquare, label: 'Чат', roles: ['admin', 'office', 'supervisor', 'promoter'] },
     { path: '/office/structure', icon: Building2, label: 'Структура', roles: ['admin', 'office'] },
     { path: '/supervisor/requests', icon: Users, label: 'Заявки', roles: ['supervisor'] },
     { path: '/training/materials', icon: GraduationCap, label: 'Обучение', roles: ['admin', 'office', 'trainer'] },
-    { path: '/chat', icon: MessageSquare, label: 'Чат', roles: ['admin', 'office', 'supervisor', 'promoter'] },
   ];
 
   const visibleItems = navItems.filter(item => 
