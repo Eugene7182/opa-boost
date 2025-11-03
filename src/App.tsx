@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { RoleGuard } from "@/components/RoleGuard";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -22,7 +23,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center">Загрузка...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
   
   if (!user) {
@@ -50,19 +55,26 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Promoter only */}
             <Route
               path="/sales/quick"
               element={
                 <ProtectedRoute>
-                  <QuickSale />
+                  <RoleGuard allowedRoles={['promoter']}>
+                    <QuickSale />
+                  </RoleGuard>
                 </ProtectedRoute>
               }
             />
+            
+            {/* Multiple roles */}
             <Route
               path="/sales/history"
               element={
                 <ProtectedRoute>
-                  <SalesHistory />
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor', 'promoter']}>
+                    <SalesHistory />
+                  </RoleGuard>
                 </ProtectedRoute>
               }
             />
@@ -70,15 +82,21 @@ const App = () => (
               path="/analytics"
               element={
                 <ProtectedRoute>
-                  <Analytics />
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
+                    <Analytics />
+                  </RoleGuard>
                 </ProtectedRoute>
               }
             />
+            
+            {/* Admin and Office only */}
             <Route
               path="/products"
               element={
                 <ProtectedRoute>
-                  <Products />
+                  <RoleGuard allowedRoles={['admin', 'office']}>
+                    <Products />
+                  </RoleGuard>
                 </ProtectedRoute>
               }
             />
@@ -86,7 +104,9 @@ const App = () => (
               path="/bonus"
               element={
                 <ProtectedRoute>
-                  <BonusSchemes />
+                  <RoleGuard allowedRoles={['admin', 'office']}>
+                    <BonusSchemes />
+                  </RoleGuard>
                 </ProtectedRoute>
               }
             />
@@ -94,7 +114,9 @@ const App = () => (
               path="/motivations"
               element={
                 <ProtectedRoute>
-                  <Motivations />
+                  <RoleGuard allowedRoles={['admin', 'office']}>
+                    <Motivations />
+                  </RoleGuard>
                 </ProtectedRoute>
               }
             />

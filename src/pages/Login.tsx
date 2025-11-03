@@ -66,15 +66,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      <Card className="w-full max-w-md p-8 space-y-6 shadow-lg border-border/50">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
             <Smartphone className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold">OPA</h1>
+          <h1 className="text-3xl font-bold">OPPO</h1>
           <p className="text-muted-foreground">
-            {isLogin ? 'Войдите в систему' : 'Создайте аккаунт'}
+            {isLogin ? 'Система аналитики и мотиваций' : 'Регистрация промоутера'}
           </p>
         </div>
 
