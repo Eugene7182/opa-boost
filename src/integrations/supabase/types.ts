@@ -848,6 +848,7 @@ export type Database = {
           product_id: string
           promoter_id: string
           quantity: number
+          store_id: string | null
           synced: boolean
           total_amount: number
           updated_at: string
@@ -861,6 +862,7 @@ export type Database = {
           product_id: string
           promoter_id: string
           quantity: number
+          store_id?: string | null
           synced?: boolean
           total_amount: number
           updated_at?: string
@@ -874,6 +876,7 @@ export type Database = {
           product_id?: string
           promoter_id?: string
           quantity?: number
+          store_id?: string | null
           synced?: boolean
           total_amount?: number
           updated_at?: string
@@ -885,6 +888,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]

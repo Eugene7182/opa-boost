@@ -239,7 +239,7 @@ export default function Competitors() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Примерная цена (₽)</Label>
+                  <Label>Примерная цена (₸)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -264,7 +264,7 @@ export default function Competitors() {
                   <div className="flex gap-3 mt-2 text-sm">
                     {product.category && <Badge variant="outline">{product.category}</Badge>}
                     {product.estimated_price && (
-                      <span className="font-semibold">{product.estimated_price} ₽</span>
+                      <span className="font-semibold">{product.estimated_price} ₸</span>
                     )}
                   </div>
                 </div>

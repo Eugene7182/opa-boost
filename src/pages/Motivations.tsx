@@ -119,7 +119,7 @@ export default function Motivations() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Дополнительный бонус (₽)</Label>
+                  <Label>Дополнительный бонус (₸)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -138,7 +138,7 @@ export default function Motivations() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Цель: сумма продаж (₽)</Label>
+                  <Label>Цель: сумма продаж (₸)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -176,12 +176,12 @@ export default function Motivations() {
                   <p className="text-sm text-muted-foreground mt-1">{motivation.description}</p>
                 )}
                 <div className="flex gap-4 mt-2 text-sm">
-                  <span className="text-success font-bold">+{motivation.bonus_extra} ₽</span>
+                  <span className="text-success font-bold">+{motivation.bonus_extra} ₸</span>
                   {motivation.target_sales_count && (
                     <span className="text-muted-foreground">Цель: {motivation.target_sales_count} продаж</span>
                   )}
                   {motivation.target_sales_amount && (
-                    <span className="text-muted-foreground">Цель: {motivation.target_sales_amount} ₽</span>
+                    <span className="text-muted-foreground">Цель: {motivation.target_sales_amount} ₸</span>
                   )}
                 </div>
               </div>

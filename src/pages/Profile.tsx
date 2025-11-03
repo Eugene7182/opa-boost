@@ -264,9 +264,9 @@ export default function Profile() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold">{Number(sale.total_amount).toFixed(0)} ₽</p>
+                          <p className="font-bold">{Number(sale.total_amount).toFixed(0)} ₸</p>
                           <p className="text-sm text-green-500">
-                            +{(Number(sale.bonus_amount) + Number(sale.bonus_extra)).toFixed(0)} ₽
+                            +{(Number(sale.bonus_amount) + Number(sale.bonus_extra)).toFixed(0)} ₸
                           </p>
                         </div>
                       </div>

@@ -41,6 +41,7 @@ export default function Users() {
     store_id: '',
     region_id: '',
   });
+  const [creatingUser, setCreatingUser] = useState(false);
 
   // Fetch users with profiles and roles
   const { data: users = [] } = useQuery({
@@ -169,6 +170,78 @@ export default function Users() {
     return user.user_roles?.[0]?.role || 'promoter';
   };
 
+  const handleCreateUser = async () => {
+    setCreatingUser(true);
+    
+    try {
+      // Validate
+      const validation = userSchema.safeParse({
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.full_name,
+      });
+
+      if (!validation.success) {
+        const errorMessage = validation.error.errors.map(e => e.message).join(', ');
+        toast.error(errorMessage);
+        setCreatingUser(false);
+        return;
+      }
+
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.full_name,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Не удалось создать пользователя');
+
+      // Update profile with additional data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          phone: formData.phone || null,
+          city: formData.city || null,
+          store_id: formData.store_id || null,
+          region_id: formData.region_id || null,
+        })
+        .eq('id', authData.user.id);
+
+      if (profileError) throw profileError;
+
+      // Assign role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert([{ user_id: authData.user.id, role: formData.role as any }]);
+
+      if (roleError) throw roleError;
+
+      toast.success('Пользователь создан');
+      setIsAddOpen(false);
+      setFormData({
+        email: '',
+        password: '',
+        full_name: '',
+        phone: '',
+        city: '',
+        role: 'promoter',
+        store_id: '',
+        region_id: '',
+      });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    } catch (error: any) {
+      toast.error(error.message || 'Ошибка создания пользователя');
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 pb-20">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -177,6 +250,113 @@ export default function Users() {
             <h1 className="text-3xl font-bold text-foreground">Управление пользователями</h1>
             <p className="text-muted-foreground">Пользователи, роли и назначения</p>
           </div>
+          
+          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Пригласить
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Пригласить пользователя</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                <div>
+                  <Label>Email *</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Пароль *</Label>
+                  <Input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    minLength={6}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Полное имя *</Label>
+                  <Input
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Телефон</Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Город</Label>
+                  <Input
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Роль *</Label>
+                  <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Администратор</SelectItem>
+                      <SelectItem value="office">Офис</SelectItem>
+                      <SelectItem value="supervisor">Супервайзер</SelectItem>
+                      <SelectItem value="trainer">Тренер</SelectItem>
+                      <SelectItem value="promoter">Промоутер</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Магазин</Label>
+                  <Select value={formData.store_id} onValueChange={(value) => setFormData({ ...formData, store_id: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите магазин" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не назначен</SelectItem>
+                      {stores.map((store: any) => (
+                        <SelectItem key={store.id} value={store.id}>
+                          {store.name} ({store.city})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Регион</Label>
+                  <Select value={formData.region_id} onValueChange={(value) => setFormData({ ...formData, region_id: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите регион" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не назначен</SelectItem>
+                      {regions.map((region: any) => (
+                        <SelectItem key={region.id} value={region.id}>
+                          {region.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleCreateUser} disabled={creatingUser} className="w-full">
+                  {creatingUser ? 'Создание...' : 'Создать пользователя'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid gap-4">

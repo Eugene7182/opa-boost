@@ -168,7 +168,7 @@ export default function Products() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Цена (₽)</Label>
+                  <Label>Цена (₸)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -193,7 +193,7 @@ export default function Products() {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{product.name}</h3>
                 <p className="text-sm text-muted-foreground">{product.category}</p>
-                <p className="text-xl font-bold mt-1">{product.price} ₽</p>
+                <p className="text-xl font-bold mt-1">{product.price} ₸</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>

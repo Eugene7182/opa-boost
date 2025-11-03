@@ -34,10 +34,23 @@ export default function QuickSale() {
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [userStoreId, setUserStoreId] = useState<string | null>(null);
 
   useEffect(() => {
     loadProducts();
+    loadUserStore();
   }, []);
+
+  const loadUserStore = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('store_id')
+      .eq('id', user.id)
+      .single();
+    
+    if (data) setUserStoreId(data.store_id);
+  };
 
   const loadProducts = async () => {
     const { data } = await supabase
@@ -109,6 +122,16 @@ export default function QuickSale() {
       const totalAmount = product.price * quantity;
       const { bonusAmount, bonusExtra } = await calculateBonus(selectedProduct, quantity, totalAmount);
 
+      if (!userStoreId) {
+        toast({
+          title: 'Ошибка',
+          description: 'Вы не закреплены за магазином',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
       const saleData = {
         promoter_id: user.id,
         product_id: selectedProduct,
@@ -117,6 +140,7 @@ export default function QuickSale() {
         bonus_amount: bonusAmount,
         bonus_extra: bonusExtra,
         uuid_client: uuidv4(),
+        store_id: userStoreId,
       };
 
       if (isOnline()) {
@@ -129,7 +153,7 @@ export default function QuickSale() {
 
         toast({
           title: 'Продажа оформлена!',
-          description: `Бонус: ${(bonusAmount + bonusExtra).toFixed(2)} ₽`,
+          description: `Бонус: ${(bonusAmount + bonusExtra).toFixed(2)} ₸`,
         });
       } else {
         await saveOfflineSale({
@@ -184,7 +208,7 @@ export default function QuickSale() {
                 <SelectContent>
                   {products.map(product => (
                     <SelectItem key={product.id} value={product.id}>
-                      {product.name} - {product.price} ₽
+                      {product.name} - {product.price} ₸
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -227,7 +251,7 @@ export default function QuickSale() {
               <div className="pt-4 border-t border-border space-y-2">
                 <div className="flex justify-between text-lg">
                   <span className="text-muted-foreground">Сумма:</span>
-                  <span className="font-bold">{totalAmount.toFixed(2)} ₽</span>
+                  <span className="font-bold">{totalAmount.toFixed(2)} ₸</span>
                 </div>
               </div>
             )}

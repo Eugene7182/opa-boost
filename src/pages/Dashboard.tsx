@@ -78,7 +78,7 @@ export default function Dashboard() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Всего продаж</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalSales.toFixed(0)} ₽</p>
+                <p className="text-2xl font-bold mt-1">{stats.totalSales.toFixed(0)} ₸</p>
               </div>
               <div className="bg-primary/10 p-2 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-primary" />
@@ -90,7 +90,7 @@ export default function Dashboard() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Бонусы</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalBonus.toFixed(0)} ₽</p>
+                <p className="text-2xl font-bold mt-1">{stats.totalBonus.toFixed(0)} ₸</p>
               </div>
               <div className="bg-success/10 p-2 rounded-lg">
                 <DollarSign className="w-5 h-5 text-success" />
@@ -102,7 +102,7 @@ export default function Dashboard() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">За месяц</p>
-                <p className="text-2xl font-bold mt-1">{stats.monthlySales.toFixed(0)} ₽</p>
+                <p className="text-2xl font-bold mt-1">{stats.monthlySales.toFixed(0)} ₸</p>
               </div>
               <div className="bg-accent/10 p-2 rounded-lg">
                 <Target className="w-5 h-5 text-accent" />

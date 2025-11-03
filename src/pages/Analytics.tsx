@@ -104,14 +104,14 @@ export default function Analytics() {
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <span className="text-sm text-muted-foreground">Продажи</span>
               </div>
-              <p className="text-2xl font-bold">{stats.todaySales.toFixed(0)} ₽</p>
+              <p className="text-2xl font-bold">{stats.todaySales.toFixed(0)} ₸</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-success" />
                 <span className="text-sm text-muted-foreground">Бонусы</span>
               </div>
-              <p className="text-2xl font-bold">{stats.todayBonus.toFixed(0)} ₽</p>
+              <p className="text-2xl font-bold">{stats.todayBonus.toFixed(0)} ₸</p>
             </Card>
           </div>
         </section>
@@ -124,14 +124,14 @@ export default function Analytics() {
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <span className="text-sm text-muted-foreground">Продажи</span>
               </div>
-              <p className="text-2xl font-bold">{stats.weekSales.toFixed(0)} ₽</p>
+              <p className="text-2xl font-bold">{stats.weekSales.toFixed(0)} ₸</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-success" />
                 <span className="text-sm text-muted-foreground">Бонусы</span>
               </div>
-              <p className="text-2xl font-bold">{stats.weekBonus.toFixed(0)} ₽</p>
+              <p className="text-2xl font-bold">{stats.weekBonus.toFixed(0)} ₸</p>
             </Card>
           </div>
         </section>
@@ -144,14 +144,14 @@ export default function Analytics() {
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <span className="text-sm text-muted-foreground">Продажи</span>
               </div>
-              <p className="text-2xl font-bold">{stats.monthSales.toFixed(0)} ₽</p>
+              <p className="text-2xl font-bold">{stats.monthSales.toFixed(0)} ₸</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-success" />
                 <span className="text-sm text-muted-foreground">Бонусы</span>
               </div>
-              <p className="text-2xl font-bold">{stats.monthBonus.toFixed(0)} ₽</p>
+              <p className="text-2xl font-bold">{stats.monthBonus.toFixed(0)} ₸</p>
             </Card>
           </div>
         </section>

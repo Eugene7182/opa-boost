@@ -139,7 +139,7 @@ export default function RetailPrices() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Розничная цена (₽)</Label>
+                  <Label>Розничная цена (₸)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -181,7 +181,7 @@ export default function RetailPrices() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{price.products?.name}</h3>
-                <p className="text-2xl font-bold text-primary mt-1">{price.price} ₽</p>
+                <p className="text-2xl font-bold text-primary mt-1">{price.price} ₸</p>
                 <div className="flex gap-2 mt-2 text-sm text-muted-foreground">
                   <span>С {new Date(price.start_date).toLocaleDateString('ru')}</span>
                   {price.end_date && (

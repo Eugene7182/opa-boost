@@ -98,9 +98,9 @@ export default function SalesHistory() {
                   <p className="text-sm text-muted-foreground">{sale.products.category}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-lg">{Number(sale.total_amount).toFixed(2)} ₽</p>
+                  <p className="font-bold text-lg">{Number(sale.total_amount).toFixed(2)} ₸</p>
                   <p className="text-sm text-success">
-                    +{(Number(sale.bonus_amount) + Number(sale.bonus_extra)).toFixed(2)} ₽
+                    +{(Number(sale.bonus_amount) + Number(sale.bonus_extra)).toFixed(2)} ₸
                   </p>
                 </div>
               </div>
