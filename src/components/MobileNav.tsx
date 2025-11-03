@@ -57,6 +57,8 @@ export const MobileNav = () => {
     { path: '/ai-assistant', icon: Sparkles, label: 'AI Ассистент', roles: ['admin', 'office', 'supervisor', 'trainer', 'promoter'] },
     { path: '/decision-hub', icon: Lightbulb, label: 'Решения', roles: ['admin', 'office', 'supervisor'] },
     { path: '/simulator', icon: PlayCircle, label: 'Симулятор', roles: ['admin', 'office', 'supervisor'] },
+    { path: '/notifications', icon: Calendar, label: 'Уведомления', roles: ['admin', 'office', 'supervisor', 'trainer', 'promoter'] },
+    { path: '/focus-campaigns', icon: Target, label: 'Кампании', roles: ['admin', 'office', 'promoter'] },
   ];
 
   const visibleItems = navItems.filter(item => 

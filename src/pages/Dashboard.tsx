@@ -12,8 +12,8 @@ import { LogOut } from 'lucide-react';
 
 // Lazy load dashboard components for code-splitting
 const DashboardPromoter = lazy(() => import('./dashboards/DashboardPromoter'));
-const DashboardRegion = lazy(() => import('./dashboards/DashboardRegion'));
-const DashboardOrg = lazy(() => import('./dashboards/DashboardOrg'));
+const DashboardSupervisor = lazy(() => import('./dashboards/DashboardSupervisor'));
+const DashboardOffice = lazy(() => import('./dashboards/DashboardOffice'));
 const DashboardTrainer = lazy(() => import('./dashboards/DashboardTrainer'));
 
 export default function Dashboard() {
@@ -39,7 +39,7 @@ export default function Dashboard() {
       case 'supervisor':
         return (
           <Suspense fallback={<LoadingFallback />}>
-            <DashboardRegion />
+            <DashboardSupervisor />
           </Suspense>
         );
       case 'trainer':
@@ -52,7 +52,7 @@ export default function Dashboard() {
       case 'admin':
         return (
           <Suspense fallback={<LoadingFallback />}>
-            <DashboardOrg />
+            <DashboardOffice />
           </Suspense>
         );
       default:

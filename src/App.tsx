@@ -30,6 +30,8 @@ import Profile from "./pages/Profile";
 import AIAssistant from "./pages/AIAssistant";
 import DecisionHub from "./pages/DecisionHub";
 import Simulator from "./pages/Simulator";
+import Notifications from "./pages/Notifications";
+import FocusCampaigns from "./pages/FocusCampaigns";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -257,6 +259,24 @@ const App = () => (
                 <ProtectedRoute>
                   <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
                     <Simulator />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/focus-campaigns"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'promoter']}>
+                    <FocusCampaigns />
                   </RoleGuard>
                 </ProtectedRoute>
               }
