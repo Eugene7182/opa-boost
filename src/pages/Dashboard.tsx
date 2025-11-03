@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileNav } from '@/components/MobileNav';
+import { OfflineSync } from '@/components/OfflineSync';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LogOut, TrendingUp, DollarSign, Target, Gift } from 'lucide-react';
@@ -58,15 +60,16 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground p-6 shadow-md">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-3">
           <div>
-            <h1 className="text-2xl font-bold">OPA Dashboard</h1>
+            <h1 className="text-2xl font-bold">OPPO Dashboard</h1>
             <p className="text-sm opacity-90">{userRole || 'Пользователь'}</p>
           </div>
           <Button variant="ghost" size="icon" onClick={signOut} className="text-primary-foreground hover:bg-primary-hover">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
+        <OfflineSync />
       </header>
 
       <main className="p-4 space-y-4">
@@ -144,6 +147,7 @@ export default function Dashboard() {
         )}
       </main>
 
+      <PWAInstallPrompt />
       <MobileNav />
     </div>
   );

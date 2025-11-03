@@ -44,7 +44,7 @@ All colors MUST be HSL.
     --input: 0 0% 90%;
     --ring: 168 100% 33%;
 
-    --radius: 1rem;
+    --radius: 0.875rem;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

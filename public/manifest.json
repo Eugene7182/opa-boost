@@ -1,7 +1,7 @@
 {
-  "name": "OPA - Система продаж и бонусов",
-  "short_name": "OPA",
-  "description": "Мобильное приложение для управления продажами и бонусами",
+  "name": "OPPO",
+  "short_name": "OPPO",
+  "description": "Система аналитики и мотиваций для промоутеров OPPO",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

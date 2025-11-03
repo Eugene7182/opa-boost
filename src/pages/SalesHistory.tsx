@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileNav } from '@/components/MobileNav';
+import { getPendingSales } from '@/lib/offline';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Sale {
   id: string;
@@ -25,10 +27,17 @@ export default function SalesHistory() {
   const navigate = useNavigate();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     loadSales();
+    checkPending();
   }, [user]);
+
+  const checkPending = async () => {
+    const pending = await getPendingSales();
+    setPendingCount(pending.length);
+  };
 
   const loadSales = async () => {
     if (!user) return;
@@ -68,6 +77,14 @@ export default function SalesHistory() {
       </header>
 
       <main className="p-4 space-y-3">
+        {pendingCount > 0 && (
+          <Alert className="border-warning bg-warning/10">
+            <AlertTriangle className="h-4 w-4 text-warning" />
+            <AlertDescription className="text-warning">
+              У вас {pendingCount} несинхронизированных продаж. Они будут отправлены при восстановлении соединения.
+            </AlertDescription>
+          </Alert>
+        )}
         {loading ? (
           <p className="text-center text-muted-foreground py-8">Загрузка...</p>
         ) : sales.length === 0 ? (
