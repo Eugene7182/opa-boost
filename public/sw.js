@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opa-v1';
+const CACHE_NAME = 'oppo-v1';
 const urlsToCache = [
   '/',
   '/manifest.json',
