@@ -28,7 +28,7 @@ interface Task {
 
 export default function Tasks() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -196,12 +196,13 @@ export default function Tasks() {
             <h1 className="text-xl font-bold">Задачи</h1>
           </div>
           
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="icon">
-                <Plus className="w-5 h-5" />
-              </Button>
-            </DialogTrigger>
+          {(userRole === 'admin' || userRole === 'office' || userRole === 'supervisor' || userRole === 'trainer') && (
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="icon">
+                  <Plus className="w-5 h-5" />
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Новая задача</DialogTitle>
@@ -249,6 +250,7 @@ export default function Tasks() {
               </form>
             </DialogContent>
           </Dialog>
+          )}
         </div>
       </header>
 
