@@ -1,25 +1,49 @@
+import { lazy, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { MobileNav } from '@/components/MobileNav';
 import { OfflineSync } from '@/components/OfflineSync';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { LogOut } from 'lucide-react';
-import DashboardPromoter from './dashboards/DashboardPromoter';
-import DashboardRegion from './dashboards/DashboardRegion';
-import DashboardOrg from './dashboards/DashboardOrg';
+
+// Lazy load dashboard components for code-splitting
+const DashboardPromoter = lazy(() => import('./dashboards/DashboardPromoter'));
+const DashboardRegion = lazy(() => import('./dashboards/DashboardRegion'));
+const DashboardOrg = lazy(() => import('./dashboards/DashboardOrg'));
 
 export default function Dashboard() {
   const { userRole, signOut } = useAuth();
 
   const renderDashboard = () => {
+    const LoadingFallback = () => (
+      <div className="p-4 space-y-4">
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-32" />
+        ))}
+      </div>
+    );
+
     switch (userRole) {
       case 'promoter':
-        return <DashboardPromoter />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <DashboardPromoter />
+          </Suspense>
+        );
       case 'supervisor':
-        return <DashboardRegion />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <DashboardRegion />
+          </Suspense>
+        );
       case 'office':
       case 'admin':
-        return <DashboardOrg />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <DashboardOrg />
+          </Suspense>
+        );
       default:
         return (
           <div className="p-4 text-center">
