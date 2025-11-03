@@ -4,6 +4,7 @@ export interface OfflineSale {
   id: string;
   promoter_id: string;
   product_id: string;
+  product_variant_id?: string;
   quantity: number;
   total_amount: number;
   bonus_amount: number;

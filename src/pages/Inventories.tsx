@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { BackButton } from '@/components/BackButton';
 import { MobileNav } from '@/components/MobileNav';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,14 +9,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { BackButton } from '@/components/BackButton';
-import { useToast } from '@/hooks/use-toast';
-import { Plus, Package, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { Plus, Edit, Package, AlertCircle, CheckCircle } from 'lucide-react';
+import { formatNumber } from '@/lib/formatters';
 
 interface Product {
   id: string;
   name: string;
+}
+
+interface ProductVariant {
+  id: string;
+  memory: string;
 }
 
 interface Store {
@@ -25,105 +32,85 @@ interface Store {
 
 interface Inventory {
   id: string;
+  product_id: string;
+  product_variant_id: string | null;
+  store_id: string;
   quantity: number;
   last_updated: string;
-  products: { name: string } | null;
-  stores: { name: string; city: string } | null;
+  products: Product;
+  product_variants: ProductVariant | null;
+  stores: Store;
 }
 
 export default function Inventories() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [inventories, setInventories] = useState<Inventory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingInventory, setEditingInventory] = useState<Inventory | null>(null);
-  const [formData, setFormData] = useState({
-    product_id: '',
-    store_id: '',
-    quantity: '',
-  });
+  const [formData, setFormData] = useState({ product_id: '', product_variant_id: '', store_id: '', quantity: '' });
 
   useEffect(() => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (formData.product_id) {
+      loadVariants(formData.product_id);
+    }
+  }, [formData.product_id]);
+
   const loadData = async () => {
-    const { data: inventoriesData } = await supabase
+    const { data: invData } = await supabase
       .from('inventories')
-      .select('*, products(name), stores(name, city)')
+      .select(`*, products(id, name), product_variants(id, memory), stores(id, name, city)`)
       .order('last_updated', { ascending: false });
 
-    const { data: productsData } = await supabase
-      .from('products')
-      .select('id, name')
-      .eq('active', true)
-      .order('name');
+    const { data: prodData } = await supabase.from('products').select('id, name').eq('active', true).order('name');
+    const { data: storeData } = await supabase.from('stores').select('id, name, city').eq('active', true).order('name');
 
-    const { data: storesData } = await supabase
-      .from('stores')
-      .select('id, name, city')
-      .eq('active', true)
-      .order('name');
+    if (invData) setInventories(invData as unknown as Inventory[]);
+    if (prodData) setProducts(prodData);
+    if (storeData) setStores(storeData);
+  };
 
-    if (inventoriesData) setInventories(inventoriesData);
-    if (productsData) setProducts(productsData);
-    if (storesData) setStores(storesData);
+  const loadVariants = async (productId: string) => {
+    const { data } = await supabase.from('product_variants').select('id, memory').eq('product_id', productId).eq('active', true);
+    if (data) setVariants(data);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const inventoryData = {
-      product_id: formData.product_id,
-      store_id: formData.store_id,
-      quantity: parseInt(formData.quantity),
-      last_updated: new Date().toISOString(),
-    };
+    const invData = { product_id: formData.product_id, product_variant_id: formData.product_variant_id || null, store_id: formData.store_id, quantity: parseInt(formData.quantity), updated_by: user?.id, last_updated: new Date().toISOString() };
 
     if (editingInventory) {
-      const { error } = await supabase
-        .from('inventories')
-        .update({ quantity: inventoryData.quantity, last_updated: inventoryData.last_updated })
-        .eq('id', editingInventory.id);
-
-      if (error) {
-        toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
-        return;
-      }
-
-      toast({ title: 'Остаток обновлён' });
+      const { error } = await supabase.from('inventories').update(invData).eq('id', editingInventory.id);
+      if (error) { toast({ title: 'Ошибка', description: error.message, variant: 'destructive' }); return; }
+      toast({ title: 'Остатки обновлены' });
     } else {
-      const { error } = await supabase.from('inventories').insert([inventoryData]);
-
-      if (error) {
-        toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
-        return;
-      }
-
-      toast({ title: 'Остаток добавлен' });
+      const { error } = await supabase.from('inventories').insert([invData]);
+      if (error) { toast({ title: 'Ошибка', description: error.message, variant: 'destructive' }); return; }
+      toast({ title: 'Остатки добавлены' });
     }
-
     setDialogOpen(false);
     setEditingInventory(null);
-    setFormData({ product_id: '', store_id: '', quantity: '' });
+    setFormData({ product_id: '', product_variant_id: '', store_id: '', quantity: '' });
     loadData();
   };
 
-  const handleEdit = (inventory: Inventory) => {
-    setEditingInventory(inventory);
-    setFormData({
-      product_id: '',
-      store_id: '',
-      quantity: inventory.quantity.toString(),
-    });
+  const handleEdit = (inv: Inventory) => {
+    setEditingInventory(inv);
+    setFormData({ product_id: inv.product_id, product_variant_id: inv.product_variant_id || '', store_id: inv.store_id, quantity: inv.quantity.toString() });
     setDialogOpen(true);
   };
 
-  const getStockStatus = (quantity: number) => {
-    if (quantity === 0) return { label: 'Нет в наличии', variant: 'destructive' as const, icon: AlertTriangle };
-    if (quantity < 10) return { label: 'Мало', variant: 'outline' as const, icon: AlertTriangle };
-    return { label: 'В наличии', variant: 'secondary' as const, icon: Package };
+  const getStockStatus = (qty: number) => {
+    if (qty === 0) return { label: 'Нет в наличии', variant: 'destructive' as const, icon: AlertCircle };
+    if (qty < 5) return { label: 'Мало', variant: 'secondary' as const, icon: AlertCircle };
+    return { label: 'В наличии', variant: 'default' as const, icon: CheckCircle };
   };
 
   return (
@@ -134,100 +121,65 @@ export default function Inventories() {
             <BackButton to="/dashboard" />
             <h1 className="text-xl font-bold">Остатки</h1>
           </div>
-          
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="icon" onClick={() => { setEditingInventory(null); setFormData({ product_id: '', store_id: '', quantity: '' }); }}>
+              <Button size="icon" onClick={() => { setEditingInventory(null); setFormData({ product_id: '', product_variant_id: '', store_id: '', quantity: '' }); }}>
                 <Plus className="w-5 h-5" />
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editingInventory ? 'Обновить остаток' : 'Добавить остаток'}</DialogTitle>
-              </DialogHeader>
+              <DialogHeader><DialogTitle>{editingInventory ? 'Редактировать' : 'Добавить остатки'}</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {!editingInventory && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Продукт</Label>
-                      <Select value={formData.product_id} onValueChange={(value) => setFormData({ ...formData, product_id: value })} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Выберите продукт" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map(p => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Магазин</Label>
-                      <Select value={formData.store_id} onValueChange={(value) => setFormData({ ...formData, store_id: value })} required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Выберите магазин" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {stores.map(s => (
-                            <SelectItem key={s.id} value={s.id}>{s.name} ({s.city})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
-                <div className="space-y-2">
-                  <Label>Количество (шт)</Label>
-                  <Input
-                    type="number"
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                    required
-                    min="0"
-                  />
+                <div className="space-y-2"><Label>Продукт</Label>
+                  <Select value={formData.product_id} onValueChange={(v) => setFormData({ ...formData, product_id: v, product_variant_id: '' })}>
+                    <SelectTrigger><SelectValue placeholder="Выберите продукт" /></SelectTrigger>
+                    <SelectContent>{products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
-                <Button type="submit" className="w-full">
-                  {editingInventory ? 'Обновить' : 'Добавить'}
-                </Button>
+                {formData.product_id && variants.length > 0 && (
+                  <div className="space-y-2"><Label>Память</Label>
+                    <Select value={formData.product_variant_id} onValueChange={(v) => setFormData({ ...formData, product_variant_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Выберите память" /></SelectTrigger>
+                      <SelectContent>{variants.map((v) => <SelectItem key={v.id} value={v.id}>{v.memory}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="space-y-2"><Label>Магазин</Label>
+                  <Select value={formData.store_id} onValueChange={(v) => setFormData({ ...formData, store_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Выберите магазин" /></SelectTrigger>
+                    <SelectContent>{stores.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} - {s.city}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Количество</Label><Input type="number" value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} required min="0" /></div>
+                <Button type="submit" className="w-full">{editingInventory ? 'Обновить' : 'Добавить'}</Button>
               </form>
             </DialogContent>
           </Dialog>
         </div>
       </header>
-
       <main className="p-4 space-y-3">
-        {inventories.map((inventory) => {
-          const status = getStockStatus(inventory.quantity);
+        {inventories.map((inv) => {
+          const status = getStockStatus(inv.quantity);
           const StatusIcon = status.icon;
-          
           return (
-            <Card key={inventory.id} className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <StatusIcon className="w-5 h-5 text-primary" />
-                </div>
+            <Card key={inv.id} className="p-4">
+              <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{inventory.products?.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {inventory.stores?.name} • {inventory.stores?.city}
-                  </p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-2xl font-bold">{inventory.quantity} шт</span>
-                    <Badge variant={status.variant}>{status.label}</Badge>
+                  <div className="flex items-center gap-2 mb-1"><Package className="w-4 h-4 text-primary" /><h3 className="font-semibold">{inv.products.name}</h3></div>
+                  {inv.product_variants && <p className="text-sm text-muted-foreground">Память: {inv.product_variants.memory}</p>}
+                  <p className="text-sm text-muted-foreground">{inv.stores.name}, {inv.stores.city}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <p className="text-lg font-bold">{formatNumber(inv.quantity)} шт</p>
+                    <Badge variant={status.variant} className="flex items-center gap-1"><StatusIcon className="w-3 h-3" />{status.label}</Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Обновлено: {new Date(inventory.last_updated).toLocaleString('ru')}
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Обновлено: {new Date(inv.last_updated).toLocaleString('ru-RU')}</p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => handleEdit(inventory)}>
-                  Изменить
-                </Button>
+                <Button variant="ghost" size="icon" onClick={() => handleEdit(inv)}><Edit className="w-4 h-4" /></Button>
               </div>
             </Card>
           );
         })}
       </main>
-
       <MobileNav />
     </div>
   );

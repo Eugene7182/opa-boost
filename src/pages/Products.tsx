@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 
@@ -31,6 +32,8 @@ export default function Products() {
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({ name: '', category: '', price: '', storage_capacity: '' });
 
@@ -118,11 +121,13 @@ export default function Products() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+    
     const { error } = await supabase
       .from('products')
       .update({ active: false })
-      .eq('id', id);
+      .eq('id', productToDelete);
 
     if (error) {
       toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
@@ -130,6 +135,8 @@ export default function Products() {
     }
 
     toast({ title: 'Продукт деактивирован' });
+    setDeleteDialogOpen(false);
+    setProductToDelete(null);
     loadProducts();
   };
 
@@ -212,7 +219,7 @@ export default function Products() {
                 <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
                   <Edit className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)}>
+                <Button variant="ghost" size="icon" onClick={() => { setProductToDelete(product.id); setDeleteDialogOpen(true); }}>
                   <Trash2 className="w-4 h-4 text-destructive" />
                 </Button>
               </div>
@@ -220,6 +227,23 @@ export default function Products() {
           </Card>
         ))}
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Подтверждение удаления</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите деактивировать этот продукт? Это действие можно будет отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <MobileNav />
     </div>

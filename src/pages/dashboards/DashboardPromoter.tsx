@@ -1,38 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, DollarSign, Target, Gift, RefreshCw } from 'lucide-react';
-import { formatKZT } from '@/lib/analytics-utils';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { RefreshCw, TrendingUp, Award, Target, AlertCircle } from 'lucide-react';
+import { formatCurrency, formatNumber, formatPercent } from '@/lib/formatters';
+import { syncOfflineSales } from '@/lib/sync-utils';
 
 interface PromoterStats {
-  today: { sales: number; quantity: number; bonuses: number };
-  week: { sales: number; quantity: number; bonuses: number };
-  month: { sales: number; quantity: number; bonuses: number };
+  today: { sales: number; quantity: number; bonus: number };
+  week: { sales: number; quantity: number; bonus: number };
+  month: { sales: number; quantity: number; bonus: number };
   activeMotivations: number;
+  plan: { target_qty: number; target_amount: number; period_end: string } | null;
+  projection: { projected_qty: number; projected_amount: number; achievement: number };
+  needsStockUpdate: boolean;
 }
 
 export default function DashboardPromoter() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [stats, setStats] = useState<PromoterStats>({
-    today: { sales: 0, quantity: 0, bonuses: 0 },
-    week: { sales: 0, quantity: 0, bonuses: 0 },
-    month: { sales: 0, quantity: 0, bonuses: 0 },
+    today: { sales: 0, quantity: 0, bonus: 0 },
+    week: { sales: 0, quantity: 0, bonus: 0 },
+    month: { sales: 0, quantity: 0, bonus: 0 },
     activeMotivations: 0,
+    plan: null,
+    projection: { projected_qty: 0, projected_amount: 0, achievement: 0 },
+    needsStockUpdate: false,
   });
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      loadStats();
-    }
+    if (user) loadStats();
   }, [user]);
+
+  const calcTotals = (sales: any[] | null) => {
+    if (!sales) return { sales: 0, quantity: 0, bonus: 0 };
+    return {
+      sales: sales.reduce((sum, s) => sum + Number(s.total_amount || 0), 0),
+      quantity: sales.reduce((sum, s) => sum + Number(s.quantity || 0), 0),
+      bonus: sales.reduce((sum, s) => sum + Number(s.bonus_amount || 0) + Number(s.bonus_extra || 0), 0),
+    };
+  };
 
   const loadStats = async () => {
     if (!user) return;
@@ -40,60 +56,87 @@ export default function DashboardPromoter() {
 
     try {
       const now = new Date();
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay() + 1);
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay() + 1);
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      // Загрузка продаж за сегодня
-      const { data: todaySales } = await supabase
+      const todayData = await supabase
         .from('sales')
         .select('total_amount, quantity, bonus_amount, bonus_extra')
         .eq('promoter_id', user.id)
-        .gte('created_at', startOfToday.toISOString());
+        .gte('created_at', todayStart.toISOString())
+        .lte('created_at', now.toISOString());
 
-      // Загрузка продаж за неделю
-      const { data: weekSales } = await supabase
+      const weekData = await supabase
         .from('sales')
         .select('total_amount, quantity, bonus_amount, bonus_extra')
         .eq('promoter_id', user.id)
-        .gte('created_at', startOfWeek.toISOString());
+        .gte('created_at', weekStart.toISOString())
+        .lte('created_at', now.toISOString());
 
-      // Загрузка продаж за месяц
-      const { data: monthSales } = await supabase
+      const monthData = await supabase
         .from('sales')
         .select('total_amount, quantity, bonus_amount, bonus_extra')
         .eq('promoter_id', user.id)
-        .gte('created_at', startOfMonth.toISOString());
+        .gte('created_at', monthStart.toISOString())
+        .lte('created_at', now.toISOString());
 
-      // Активные мотивации
-      const { data: motivations } = await supabase
+      const { count: motivCount } = await supabase
         .from('motivations')
-        .select('id')
-        .eq('active', true);
+        .select('*', { count: 'exact', head: true })
+        .eq('active', true)
+        .lte('start_date', now.toISOString())
+        .or(`end_date.is.null,end_date.gte.${now.toISOString()}`);
 
-      const calcTotals = (sales: any[] | null) => {
-        if (!sales) return { sales: 0, quantity: 0, bonuses: 0 };
-        return {
-          sales: sales.reduce((sum, s) => sum + Number(s.total_amount || 0), 0),
-          quantity: sales.reduce((sum, s) => sum + Number(s.quantity || 0), 0),
-          bonuses: sales.reduce((sum, s) => sum + Number(s.bonus_amount || 0) + Number(s.bonus_extra || 0), 0),
-        };
-      };
+      const { data: planData } = await supabase
+        .from('sales_plans')
+        .select('target_qty, target_amount, period_end')
+        .eq('promoter_id', user.id)
+        .gte('period_end', now.toISOString())
+        .order('period_end', { ascending: true })
+        .limit(1)
+        .single();
+
+      const monthTotals = calcTotals(monthData.data);
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const daysPassed = now.getDate();
+      const daysRemaining = daysInMonth - daysPassed;
+      
+      const avgDailySales = daysPassed > 0 ? monthTotals.sales / daysPassed : 0;
+      const avgDailyQty = daysPassed > 0 ? monthTotals.quantity / daysPassed : 0;
+      
+      const projectedAmount = monthTotals.sales + (avgDailySales * daysRemaining);
+      const projectedQty = monthTotals.quantity + (avgDailyQty * daysRemaining);
+      const achievement = planData?.target_amount ? (projectedAmount / planData.target_amount) * 100 : 0;
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('store_id')
+        .eq('id', user.id)
+        .single();
+
+      const { data: reminderData } = await supabase
+        .from('stock_reminders')
+        .select('status')
+        .eq('store_id', profileData?.store_id || '')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
       setStats({
-        today: calcTotals(todaySales),
-        week: calcTotals(weekSales),
-        month: calcTotals(monthSales),
-        activeMotivations: motivations?.length || 0,
+        today: calcTotals(todayData.data),
+        week: calcTotals(weekData.data),
+        month: monthTotals,
+        activeMotivations: motivCount || 0,
+        plan: planData,
+        projection: { projected_qty: projectedQty, projected_amount: projectedAmount, achievement },
+        needsStockUpdate: !!reminderData,
       });
     } catch (error) {
       console.error('Error loading stats:', error);
-      toast({
-        title: t('error.title'),
-        description: t('dashboard.loadError'),
-        variant: 'destructive',
-      });
+      toast({ title: t('error.title'), description: t('dashboard.loadError'), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -102,19 +145,11 @@ export default function DashboardPromoter() {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      // Здесь логика синхронизации офлайн-данных из IndexedDB
-      // Предполагается, что у вас уже есть OfflineSync компонент
+      await syncOfflineSales();
       await loadStats();
-      toast({
-        title: t('dashboard.syncComplete'),
-        description: t('dashboard.dataUpdated'),
-      });
+      toast({ title: t('dashboard.syncComplete'), description: t('dashboard.dataUpdated') });
     } catch (error) {
-      toast({
-        title: t('dashboard.syncError'),
-        description: t('dashboard.syncFailed'),
-        variant: 'destructive',
-      });
+      toast({ title: t('dashboard.syncError'), description: t('dashboard.syncFailed'), variant: 'destructive' });
     } finally {
       setSyncing(false);
     }
@@ -123,146 +158,123 @@ export default function DashboardPromoter() {
   if (loading) {
     return (
       <div className="p-4 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-28" />
-          ))}
-        </div>
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-32" />
+        ))}
       </div>
     );
   }
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">{t('dashboard.mySales')}</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleSync}
-          disabled={syncing}
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-          {t('dashboard.sync')}
-        </Button>
+      {stats.needsStockUpdate && (
+        <Card className="border-warning bg-warning/10">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-warning" />
+              <div>
+                <p className="font-semibold text-warning-foreground">{t('dashboard.stockUpdateNeeded')}</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.pleaseUpdateStock')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="col-span-2 bg-gradient-to-br from-primary/10 to-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              {t('dashboard.today')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div>
+                <p className="text-3xl font-bold text-primary">{formatCurrency(stats.today.bonus)}</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.bonus')}</p>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>{t('dashboard.quantity')}: <strong>{formatNumber(stats.today.quantity)}</strong></span>
+                <span>{t('dashboard.sales')}: <strong>{formatCurrency(stats.today.sales)}</strong></span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">{t('dashboard.week')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{formatCurrency(stats.week.bonus)}</p>
+            <p className="text-xs text-muted-foreground mt-1">{formatNumber(stats.week.quantity)} {t('dashboard.units')}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">{t('dashboard.month')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{formatCurrency(stats.month.bonus)}</p>
+            <p className="text-xs text-muted-foreground mt-1">{formatNumber(stats.month.quantity)} {t('dashboard.units')}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Сегодня */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground">{t('dashboard.today')}</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('dashboard.revenue')}</p>
-                  <p className="text-xl font-bold mt-1">{formatKZT(stats.today.sales)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.today.quantity} {t('dashboard.pcs')}</p>
-                </div>
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                </div>
+      {stats.plan && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              {t('dashboard.plan')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-sm">{t('dashboard.target')}</span>
+              <span className="font-semibold">{formatNumber(stats.plan.target_qty)} {t('dashboard.units')}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm">{t('dashboard.current')}</span>
+              <span className="font-semibold">{formatNumber(stats.month.quantity)} {t('dashboard.units')}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">{t('dashboard.projection')}</span>
+              <div className="text-right">
+                <p className="font-semibold">{formatNumber(stats.projection.projected_qty)} {t('dashboard.units')}</p>
+                <Badge variant={stats.projection.achievement >= 100 ? 'default' : stats.projection.achievement >= 80 ? 'secondary' : 'destructive'}>
+                  {formatPercent(stats.projection.achievement / 100, 0)}
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('dashboard.bonuses')}</p>
-                  <p className="text-xl font-bold mt-1">{formatKZT(stats.today.bonuses)}</p>
-                </div>
-                <div className="bg-success/10 p-2 rounded-lg">
-                  <DollarSign className="w-4 h-4 text-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* За неделю */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground">{t('dashboard.week')}</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('dashboard.revenue')}</p>
-                  <p className="text-xl font-bold mt-1">{formatKZT(stats.week.sales)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.week.quantity} {t('dashboard.pcs')}</p>
-                </div>
-                <div className="bg-accent/10 p-2 rounded-lg">
-                  <Target className="w-4 h-4 text-accent" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('dashboard.bonuses')}</p>
-                  <p className="text-xl font-bold mt-1">{formatKZT(stats.week.bonuses)}</p>
-                </div>
-                <div className="bg-success/10 p-2 rounded-lg">
-                  <DollarSign className="w-4 h-4 text-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* За месяц */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground">{t('dashboard.month')}</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('dashboard.revenue')}</p>
-                  <p className="text-xl font-bold mt-1">{formatKZT(stats.month.sales)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.month.quantity} {t('dashboard.pcs')}</p>
-                </div>
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('dashboard.bonuses')}</p>
-                  <p className="text-xl font-bold mt-1">{formatKZT(stats.month.bonuses)}</p>
-                </div>
-                <div className="bg-success/10 p-2 rounded-lg">
-                  <DollarSign className="w-4 h-4 text-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Активные мотивации */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">{t('dashboard.activeMotivations')}</p>
-              <p className="text-2xl font-bold mt-1">{stats.activeMotivations}</p>
-            </div>
-            <div className="bg-warning/10 p-2 rounded-lg">
-              <Gift className="w-5 h-5 text-warning" />
-            </div>
-          </div>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Award className="w-4 h-4" />
+            {t('dashboard.activeMotivations')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-3xl font-bold">{stats.activeMotivations}</p>
         </CardContent>
       </Card>
+
+      <Button 
+        onClick={handleSync} 
+        disabled={syncing}
+        className="w-full"
+        variant="outline"
+      >
+        <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+        {syncing ? t('dashboard.syncing') : t('dashboard.sync')}
+      </Button>
     </div>
   );
 }

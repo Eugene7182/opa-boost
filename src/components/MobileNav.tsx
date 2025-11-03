@@ -47,7 +47,7 @@ export const MobileNav = () => {
     { path: '/kef', icon: Calculator, label: 'КЭФ', roles: ['admin', 'office'] },
     { path: '/bonus', icon: Gift, label: 'Бонусы', roles: ['admin', 'office'] },
     { path: '/motivations', icon: Target, label: 'Мотивации', roles: ['admin', 'office'] },
-    { path: '/map', icon: Map, label: 'Карта', roles: ['admin', 'office', 'supervisor'] },
+    { path: '/inventories', icon: Package, label: 'Остатки', roles: ['admin', 'office', 'supervisor', 'promoter'] },
     { path: '/tasks', icon: CheckSquare, label: 'Задачи', roles: ['admin', 'office', 'supervisor', 'promoter'] },
     { path: '/training', icon: GraduationCap, label: 'Обучение', roles: ['admin', 'office', 'supervisor', 'trainer', 'promoter'] },
     { path: '/chat', icon: MessageSquare, label: 'Чат', roles: ['admin', 'office', 'supervisor', 'promoter'] },
