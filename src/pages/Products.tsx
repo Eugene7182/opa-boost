@@ -9,6 +9,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+
+const productSchema = z.object({
+  name: z.string().trim().min(1, { message: 'Название не может быть пустым' }).max(200, { message: 'Название слишком длинное (макс. 200 символов)' }),
+  category: z.string().trim().min(1, { message: 'Категория не может быть пустой' }).max(100, { message: 'Категория слишком длинная (макс. 100 символов)' }),
+  price: z.number().positive({ message: 'Цена должна быть положительной' }).max(1000000, { message: 'Цена слишком велика' }),
+});
 
 interface Product {
   id: string;
@@ -42,10 +49,27 @@ export default function Products() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const productData = {
+    // Validate input
+    const validation = productSchema.safeParse({
       name: formData.name,
       category: formData.category,
       price: parseFloat(formData.price),
+    });
+
+    if (!validation.success) {
+      const errorMessage = validation.error.errors.map(e => e.message).join(', ');
+      toast({ 
+        title: 'Ошибка валидации', 
+        description: errorMessage, 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    const productData = {
+      name: validation.data.name,
+      category: validation.data.category,
+      price: validation.data.price,
       active: true,
     };
 

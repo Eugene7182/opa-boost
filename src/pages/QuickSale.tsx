@@ -12,6 +12,12 @@ import { ArrowLeft, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { saveOfflineSale, isOnline } from '@/lib/offline';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
+
+const saleSchema = z.object({
+  product_id: z.string().uuid({ message: 'Неверный ID продукта' }),
+  quantity: z.number().int({ message: 'Количество должно быть целым числом' }).positive({ message: 'Количество должно быть положительным' }).max(1000, { message: 'Максимум 1000 штук за раз' }),
+});
 
 interface Product {
   id: string;
@@ -80,6 +86,23 @@ export default function QuickSale() {
     setLoading(true);
 
     try {
+      // Validate input
+      const validation = saleSchema.safeParse({
+        product_id: selectedProduct,
+        quantity,
+      });
+
+      if (!validation.success) {
+        const errorMessage = validation.error.errors.map(e => e.message).join(', ');
+        toast({
+          title: 'Ошибка валидации',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
       const product = products.find(p => p.id === selectedProduct);
       if (!product) return;
 

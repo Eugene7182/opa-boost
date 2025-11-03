@@ -10,6 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+
+const bonusSchemeSchema = z.object({
+  name: z.string().trim().min(1, { message: 'Название не может быть пустым' }).max(200, { message: 'Название слишком длинное' }),
+  bonus_percent: z.number().min(0, { message: 'Процент бонуса не может быть отрицательным' }).max(100, { message: 'Процент бонуса не может превышать 100%' }),
+  min_quantity: z.number().int({ message: 'Количество должно быть целым числом' }).positive({ message: 'Количество должно быть положительным' }).max(10000, { message: 'Максимум 10000 штук' }),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Неверный формат даты' }),
+});
 
 interface Product {
   id: string;
@@ -62,12 +70,30 @@ export default function BonusSchemes() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { error } = await supabase.from('bonus_schemes').insert([{
+    // Validate input
+    const validation = bonusSchemeSchema.safeParse({
       name: formData.name,
-      product_id: formData.product_id || null,
       bonus_percent: parseFloat(formData.bonus_percent),
       min_quantity: parseInt(formData.min_quantity),
       start_date: formData.start_date,
+    });
+
+    if (!validation.success) {
+      const errorMessage = validation.error.errors.map(e => e.message).join(', ');
+      toast({ 
+        title: 'Ошибка валидации', 
+        description: errorMessage, 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    const { error } = await supabase.from('bonus_schemes').insert([{
+      name: validation.data.name,
+      bonus_percent: validation.data.bonus_percent,
+      min_quantity: validation.data.min_quantity,
+      start_date: validation.data.start_date,
+      product_id: formData.product_id || null,
       active: true,
     }]);
 
