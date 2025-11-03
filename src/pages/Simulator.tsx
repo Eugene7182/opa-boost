@@ -16,6 +16,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SimulationResult {
   scenario: string;
@@ -42,6 +43,12 @@ export default function Simulator() {
     setIsSimulating(true);
     
     try {
+      // Get JWT token from current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Требуется авторизация');
+      }
+
       const scenario = `
         Изменение цены: ${priceChange[0] > 0 ? '+' : ''}${priceChange[0]}%
         Интенсивность промо: ${promoIntensity[0]}%
@@ -55,7 +62,7 @@ export default function Simulator() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ 
           messages: [{
