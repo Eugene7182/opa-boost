@@ -93,32 +93,38 @@ export type Database = {
       }
       chat_messages: {
         Row: {
+          audience: Json | null
           content: string
           conversation_id: string
           created_at: string
           file_url: string | null
           id: string
           message_type: string
+          pinned: boolean
           sender_id: string
           updated_at: string
         }
         Insert: {
+          audience?: Json | null
           content: string
           conversation_id: string
           created_at?: string
           file_url?: string | null
           id?: string
           message_type?: string
+          pinned?: boolean
           sender_id: string
           updated_at?: string
         }
         Update: {
+          audience?: Json | null
           content?: string
           conversation_id?: string
           created_at?: string
           file_url?: string | null
           id?: string
           message_type?: string
+          pinned?: boolean
           sender_id?: string
           updated_at?: string
         }
@@ -286,33 +292,113 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          enabled: boolean
+          flag_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          flag_name: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          flag_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      focus_campaigns: {
+        Row: {
+          created_at: string
+          created_by: string
+          end_date: string
+          goal_amount: number | null
+          goal_qty: number | null
+          id: string
+          product_id: string
+          start_date: string
+          title: string
+          updated_at: string
+          variant_required: boolean
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          end_date: string
+          goal_amount?: number | null
+          goal_qty?: number | null
+          id?: string
+          product_id: string
+          start_date: string
+          title: string
+          updated_at?: string
+          variant_required?: boolean
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          end_date?: string
+          goal_amount?: number | null
+          goal_qty?: number | null
+          id?: string
+          product_id?: string
+          start_date?: string
+          title?: string
+          updated_at?: string
+          variant_required?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "focus_campaigns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventories: {
         Row: {
           created_at: string
           id: string
           last_updated: string
           product_id: string
+          product_variant_id: string | null
           quantity: number
+          status: string
           store_id: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           last_updated?: string
           product_id: string
+          product_variant_id?: string | null
           quantity?: number
+          status?: string
           store_id: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           last_updated?: string
           product_id?: string
+          product_variant_id?: string | null
           quantity?: number
+          status?: string
           store_id?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -320,6 +406,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventories_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
           {
@@ -572,6 +665,73 @@ export type Database = {
           },
         ]
       }
+      message_receipts: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          id: string
+          message_id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          message_id: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          message_id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_receipts_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      motivation_rules: {
+        Row: {
+          bonus: number
+          created_at: string
+          id: string
+          min_qty: number
+          motivation_id: string
+        }
+        Insert: {
+          bonus: number
+          created_at?: string
+          id?: string
+          min_qty: number
+          motivation_id: string
+        }
+        Update: {
+          bonus?: number
+          created_at?: string
+          id?: string
+          min_qty?: number
+          motivation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motivation_rules_motivation_id_fkey"
+            columns: ["motivation_id"]
+            isOneToOne: false
+            referencedRelation: "motivations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       motivations: {
         Row: {
           active: boolean
@@ -679,6 +839,41 @@ export type Database = {
           },
         ]
       }
+      product_variants: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          memory: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          memory: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          memory?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean
@@ -722,6 +917,8 @@ export type Database = {
           phone: string | null
           region_id: string | null
           store_id: string | null
+          suggestions_enabled: boolean
+          trainer_region_ids: string[] | null
           updated_at: string
         }
         Insert: {
@@ -733,6 +930,8 @@ export type Database = {
           phone?: string | null
           region_id?: string | null
           store_id?: string | null
+          suggestions_enabled?: boolean
+          trainer_region_ids?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -744,6 +943,8 @@ export type Database = {
           phone?: string | null
           region_id?: string | null
           store_id?: string | null
+          suggestions_enabled?: boolean
+          trainer_region_ids?: string[] | null
           updated_at?: string
         }
         Relationships: [
@@ -849,6 +1050,7 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
+          product_variant_id: string | null
           promoter_id: string
           quantity: number
           store_id: string | null
@@ -863,6 +1065,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
+          product_variant_id?: string | null
           promoter_id: string
           quantity: number
           store_id?: string | null
@@ -877,6 +1080,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
+          product_variant_id?: string | null
           promoter_id?: string
           quantity?: number
           store_id?: string | null
@@ -894,7 +1098,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "sales_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "sales_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_plans: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          period_end: string
+          period_start: string
+          promoter_id: string
+          region_id: string | null
+          target_amount: number
+          target_qty: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          period_end: string
+          period_start: string
+          promoter_id: string
+          region_id?: string | null
+          target_amount?: number
+          target_qty?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          promoter_id?: string
+          region_id?: string | null
+          target_amount?: number
+          target_qty?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_plans_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_reminders: {
+        Row: {
+          created_at: string
+          due_at: string
+          id: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          due_at: string
+          id?: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          due_at?: string
+          id?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_reminders_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
