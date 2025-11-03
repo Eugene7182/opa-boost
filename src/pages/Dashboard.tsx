@@ -14,6 +14,7 @@ import { LogOut } from 'lucide-react';
 const DashboardPromoter = lazy(() => import('./dashboards/DashboardPromoter'));
 const DashboardRegion = lazy(() => import('./dashboards/DashboardRegion'));
 const DashboardOrg = lazy(() => import('./dashboards/DashboardOrg'));
+const DashboardTrainer = lazy(() => import('./dashboards/DashboardTrainer'));
 
 export default function Dashboard() {
   const { userRole, signOut } = useAuth();
@@ -39,6 +40,12 @@ export default function Dashboard() {
         return (
           <Suspense fallback={<LoadingFallback />}>
             <DashboardRegion />
+          </Suspense>
+        );
+      case 'trainer':
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <DashboardTrainer />
           </Suspense>
         );
       case 'office':

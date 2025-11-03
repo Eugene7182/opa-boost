@@ -27,12 +27,20 @@ interface Product {
   storage_capacity?: string | null;
 }
 
+interface ProductVariant {
+  id: string;
+  product_id: string;
+  memory: string;
+  active: boolean;
+}
+
 export default function QuickSale() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
-  const [selectedMemory, setSelectedMemory] = useState<string>('');
+  const [selectedVariantId, setSelectedVariantId] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userStoreId, setUserStoreId] = useState<string | null>(null);
@@ -41,6 +49,12 @@ export default function QuickSale() {
     loadProducts();
     loadUserStore();
   }, []);
+
+  useEffect(() => {
+    if (selectedProduct) {
+      loadVariants(selectedProduct);
+    }
+  }, [selectedProduct]);
 
   const loadUserStore = async () => {
     if (!user) return;
@@ -61,6 +75,17 @@ export default function QuickSale() {
       .order('name');
     
     if (data) setProducts(data);
+  };
+
+  const loadVariants = async (productId: string) => {
+    const { data } = await supabase
+      .from('product_variants')
+      .select('*')
+      .eq('product_id', productId)
+      .eq('active', true)
+      .order('memory');
+    
+    if (data) setVariants(data);
   };
 
   const calculateBonus = async (productId: string, qty: number, totalAmount: number) => {
@@ -136,6 +161,7 @@ export default function QuickSale() {
       const saleData = {
         promoter_id: user.id,
         product_id: selectedProduct,
+        product_variant_id: selectedVariantId || null,
         quantity,
         total_amount: totalAmount,
         bonus_amount: bonusAmount,
@@ -170,7 +196,8 @@ export default function QuickSale() {
       }
 
       setSelectedProduct('');
-      setSelectedMemory('');
+      setSelectedVariantId('');
+      setVariants([]);
       setQuantity(1);
       // Успешно сохранено - можно вернуться к истории продаж при необходимости
     } catch (error: any) {
@@ -201,7 +228,7 @@ export default function QuickSale() {
           <Card className="p-6 space-y-4">
             <div className="space-y-2">
               <Label>Продукт</Label>
-              <Select value={selectedProduct} onValueChange={(value) => { setSelectedProduct(value); setSelectedMemory(''); }} required>
+              <Select value={selectedProduct} onValueChange={(value) => { setSelectedProduct(value); setSelectedVariantId(''); }} required>
                 <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Выберите продукт" />
                 </SelectTrigger>
@@ -215,22 +242,19 @@ export default function QuickSale() {
               </Select>
             </div>
 
-            {selectedProductData?.storage_capacity && (
+            {variants.length > 0 && (
               <div className="space-y-2">
-                <Label>Память (ГБ)</Label>
-                <Select value={selectedMemory} onValueChange={setSelectedMemory} required>
+                <Label>Память</Label>
+                <Select value={selectedVariantId} onValueChange={setSelectedVariantId} required>
                   <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Выберите память" />
                   </SelectTrigger>
                   <SelectContent>
-                    {selectedProductData.storage_capacity.split(',').map((memory: string) => {
-                      const memoryTrim = memory.trim();
-                      return (
-                        <SelectItem key={memoryTrim} value={memoryTrim}>
-                          {memoryTrim} ГБ
-                        </SelectItem>
-                      );
-                    })}
+                    {variants.map(variant => (
+                      <SelectItem key={variant.id} value={variant.id}>
+                        {variant.memory}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -281,7 +305,7 @@ export default function QuickSale() {
           <Button
             type="submit"
             className="w-full h-14 text-lg font-semibold"
-            disabled={loading || !selectedProduct || (selectedProductData?.storage_capacity && !selectedMemory)}
+            disabled={loading || !selectedProduct || (variants.length > 0 && !selectedVariantId)}
           >
             {loading ? 'Обработка...' : 'Оформить продажу'}
           </Button>
