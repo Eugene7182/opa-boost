@@ -29,6 +29,9 @@ import Training from "./pages/Training";
 import Users from "./pages/Users";
 import OrgStructure from "./pages/OrgStructure";
 import Profile from "./pages/Profile";
+import AIAssistant from "./pages/AIAssistant";
+import DecisionHub from "./pages/DecisionHub";
+import Simulator from "./pages/Simulator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -267,6 +270,34 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai-assistant"
+              element={
+                <ProtectedRoute>
+                  <AIAssistant />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/decision-hub"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
+                    <DecisionHub />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/simulator"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office', 'supervisor']}>
+                    <Simulator />
+                  </RoleGuard>
                 </ProtectedRoute>
               }
             />
