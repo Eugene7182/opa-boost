@@ -34,6 +34,9 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+# При разработке в удалённом контейнере используйте скрипт, который слушает 0.0.0.0 и не чистит лог:
+scripts/run_frontend.sh
 ```
 
 **Edit a file directly in GitHub**
@@ -50,24 +53,53 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Backend services
 
-This project is built with:
+The repository now includes a FastAPI backend under `backend/` with the following capabilities:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Bonus сетки и коридоры: `GET/POST/PUT/DELETE /api/v1/bonus/networks`, `GET/POST/PUT/DELETE /api/v1/bonus/tiers`, `POST /api/v1/bonus/import` (CSV, поддержка dry-run).
+- Планирование промоутеров: `GET/POST /api/v1/plans`, `GET /api/v1/plans/progress`.
+- Продажи с расчётом бонуса: `POST /api/v1/sales` (параметр `memory_gb` обязателен).
+- Остатки: `GET /api/v1/inventory`, `POST /api/v1/inventory/upsert`, `GET /api/v1/inventory/last-updates`.
+- Приглашения и роли: `POST /api/v1/invitations`, `POST /api/v1/invitations/accept`, `POST /api/v1/invitations/assign-role`.
+- Задачи и сообщения: `POST /api/v1/tasks`, `POST /api/v1/tasks/messages`.
+- Обслуживание: `POST /api/v1/maintenance/run-inventory-reminder-now`.
 
-## How can I deploy this project?
+### Запуск локально
 
-Simply open [Lovable](https://lovable.dev/projects/3e1831f2-db93-44de-b35e-4cdfe6127cc2) and click on Share -> Publish.
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+```
 
-## Can I connect a custom domain to my Lovable project?
+Переменные окружения:
 
-Yes, you can!
+- `DATABASE_URL` — строка подключения PostgreSQL.
+- `SECRET_KEY` — секрет для JWT.
+- `CORS_ORIGINS` — список разрешённых фронтенд-доменов (через запятую).
+- `ENABLE_AI` — фича-флаг для AI-подсказок (по умолчанию false).
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Для запуска планировщика APScheduler в продакшене используйте команду:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```bash
+export PYTHONPATH="$(pwd)"
+alembic upgrade head
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+### Сидинг демо-данных
+
+```bash
+python backend/scripts/seed_demo_data.py
+```
+
+### E2E сценарий (ручной)
+
+1. Импортируйте CSV в `POST /api/v1/bonus/import` (пример в `samples/bonus_import`).
+2. Назначьте план промоутеру через `POST /api/v1/plans`.
+3. Создайте продажу `POST /api/v1/sales` — убедитесь, что бонус рассчитан.
+4. Проверьте прогресс `GET /api/v1/plans/progress`.
