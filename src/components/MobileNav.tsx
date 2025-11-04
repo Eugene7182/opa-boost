@@ -43,7 +43,7 @@ export const MobileNav = () => {
     { path: '/sales/history', icon: History, label: 'История', roles: ['admin', 'office', 'supervisor', 'promoter'] },
     { path: '/analytics', icon: BarChart3, label: 'Аналитика', roles: ['admin', 'office', 'supervisor'] },
     { path: '/products', icon: Package, label: 'Продукты', roles: ['admin', 'office'] },
-    { path: '/kef', icon: Calculator, label: 'КЭФ', roles: ['admin', 'office'] },
+  { path: '/bonus-schemes', icon: Calculator, label: 'Бонусная сетка', roles: ['admin', 'office'] },
     { path: '/bonus', icon: Gift, label: 'Бонусы', roles: ['admin', 'office'] },
     { path: '/motivations', icon: Target, label: 'Мотивации', roles: ['admin', 'office'] },
     { path: '/inventories', icon: Package, label: 'Остатки', roles: ['admin', 'office', 'supervisor', 'promoter'] },
