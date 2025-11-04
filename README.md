@@ -103,3 +103,21 @@ python backend/scripts/seed_demo_data.py
 2. Назначьте план промоутеру через `POST /api/v1/plans`.
 3. Создайте продажу `POST /api/v1/sales` — убедитесь, что бонус рассчитан.
 4. Проверьте прогресс `GET /api/v1/plans/progress`.
+
+## Telegram Mini App (tma-app)
+
+Минимальное приложение Telegram Mini App собрано в каталоге `tma-app/`.
+
+### Локальный запуск
+```bash
+cd tma-app
+npm install
+npm run dev   # поднимает Vite (5173) и сервер Express (3000)
+```
+
+### Прод-сборка
+```bash
+npm run build
+# запуск сервера, который отдаёт собранный фронт из dist
+node --env-file=.env --loader ts-node/esm server.ts
+```
