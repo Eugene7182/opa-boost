@@ -1020,6 +1020,7 @@ export type Database = {
           memory_gb: number
           product_id: string
           sku: string | null
+          storage_gb: number
           updated_at: string
         }
         Insert: {
@@ -1029,6 +1030,7 @@ export type Database = {
           memory_gb?: number
           product_id: string
           sku?: string | null
+          storage_gb?: number
           updated_at?: string
         }
         Update: {
@@ -1038,6 +1040,7 @@ export type Database = {
           memory_gb?: number
           product_id?: string
           sku?: string | null
+          storage_gb?: number
           updated_at?: string
         }
         Relationships: [
