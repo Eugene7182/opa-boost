@@ -61,6 +61,99 @@ export type Database = {
           },
         ]
       }
+      campaign_bonus_rules: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          extra_per_sale: number
+          id: string
+          product_variant_id: string
+          threshold_qty: number
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          extra_per_sale: number
+          id?: string
+          product_variant_id: string
+          threshold_qty: number
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          extra_per_sale?: number
+          id?: string
+          product_variant_id?: string
+          threshold_qty?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_bonus_rules_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_bonus_rules_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          end_at: string
+          id: string
+          name: string
+          network_id: string
+          start_at: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          end_at: string
+          id?: string
+          name: string
+          network_id: string
+          start_at: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          end_at?: string
+          id?: string
+          name?: string
+          network_id?: string
+          start_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_conversations: {
         Row: {
           active: boolean
@@ -774,6 +867,51 @@ export type Database = {
         }
         Relationships: []
       }
+      network_product_bonuses: {
+        Row: {
+          active: boolean
+          base_bonus: number
+          created_at: string
+          id: string
+          network_id: string
+          product_variant_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          base_bonus: number
+          created_at?: string
+          id?: string
+          network_id: string
+          product_variant_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          base_bonus?: number
+          created_at?: string
+          id?: string
+          network_id?: string
+          product_variant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_product_bonuses_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "network_product_bonuses_product_variant_id_fkey"
+            columns: ["product_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       networks: {
         Row: {
           active: boolean
@@ -835,6 +973,41 @@ export type Database = {
             columns: ["region_id"]
             isOneToOne: false
             referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_bonus_tiers: {
+        Row: {
+          bonus_amount: number
+          created_at: string
+          id: string
+          max_percent: number | null
+          min_percent: number
+          network_id: string
+        }
+        Insert: {
+          bonus_amount: number
+          created_at?: string
+          id?: string
+          max_percent?: number | null
+          min_percent: number
+          network_id: string
+        }
+        Update: {
+          bonus_amount?: number
+          created_at?: string
+          id?: string
+          max_percent?: number | null
+          min_percent?: number
+          network_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_bonus_tiers_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks"
             referencedColumns: ["id"]
           },
         ]
@@ -957,6 +1130,61 @@ export type Database = {
           },
           {
             foreignKeyName: "profiles_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promoter_plans: {
+        Row: {
+          created_at: string
+          id: string
+          month_start: string
+          network_id: string
+          promoter_id: string
+          store_id: string | null
+          target_qty: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month_start: string
+          network_id: string
+          promoter_id: string
+          store_id?: string | null
+          target_qty: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month_start?: string
+          network_id?: string
+          promoter_id?: string
+          store_id?: string | null
+          target_qty?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promoter_plans_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promoter_plans_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promoter_plans_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
@@ -1709,6 +1937,70 @@ export type Database = {
             columns: ["trainer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_invites: {
+        Row: {
+          accepted: boolean
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          phone: string | null
+          region_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          store_id: string | null
+          token: string
+        }
+        Insert: {
+          accepted?: boolean
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by: string
+          phone?: string | null
+          region_id?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          store_id?: string | null
+          token: string
+        }
+        Update: {
+          accepted?: boolean
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          phone?: string | null
+          region_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          store_id?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invites_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invites_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
