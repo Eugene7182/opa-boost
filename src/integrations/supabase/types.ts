@@ -1017,24 +1017,27 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
-          memory: string
+          memory_gb: number
           product_id: string
+          sku: string | null
           updated_at: string
         }
         Insert: {
           active?: boolean
           created_at?: string
           id?: string
-          memory: string
+          memory_gb?: number
           product_id: string
+          sku?: string | null
           updated_at?: string
         }
         Update: {
           active?: boolean
           created_at?: string
           id?: string
-          memory?: string
+          memory_gb?: number
           product_id?: string
+          sku?: string | null
           updated_at?: string
         }
         Relationships: [
