@@ -9,8 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, DollarSign, TrendingUp } from 'lucide-react';
+import { Plus, DollarSign, TrendingUp, Pencil, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -56,6 +66,10 @@ export default function BonusSchemes() {
   const [tierDialogOpen, setTierDialogOpen] = useState(false);
   const [bonusForm, setBonusForm] = useState({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' });
   const [tierForm, setTierForm] = useState({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' });
+  const [editingBonus, setEditingBonus] = useState<NetworkBonus | null>(null);
+  const [editingTier, setEditingTier] = useState<PlanTier | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ type: 'bonus' | 'tier'; id: string } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -117,21 +131,41 @@ export default function BonusSchemes() {
       return;
     }
 
-    const { error } = await supabase
-      .from('network_product_bonuses')
-      .upsert([{
-        network_id: bonusForm.network_id,
-        product_variant_id: bonusForm.product_variant_id,
-        base_bonus: parseFloat(bonusForm.base_bonus),
-      }], { onConflict: 'network_id,product_variant_id' });
+    if (editingBonus) {
+      const { error } = await supabase
+        .from('network_product_bonuses')
+        .update({
+          network_id: bonusForm.network_id,
+          product_variant_id: bonusForm.product_variant_id,
+          base_bonus: parseFloat(bonusForm.base_bonus),
+        })
+        .eq('id', editingBonus.id);
 
-    if (error) {
-      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
-      return;
+      if (error) {
+        toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      toast({ title: 'Бонус обновлён' });
+    } else {
+      const { error } = await supabase
+        .from('network_product_bonuses')
+        .upsert([{
+          network_id: bonusForm.network_id,
+          product_variant_id: bonusForm.product_variant_id,
+          base_bonus: parseFloat(bonusForm.base_bonus),
+        }], { onConflict: 'network_id,product_variant_id' });
+
+      if (error) {
+        toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      toast({ title: 'Бонус сохранён' });
     }
 
-    toast({ title: 'Бонус сохранён' });
     setBonusDialogOpen(false);
+    setEditingBonus(null);
     setBonusForm({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' });
     loadData();
   };
@@ -155,24 +189,116 @@ export default function BonusSchemes() {
       return;
     }
 
-    const { error } = await supabase
-      .from('plan_bonus_tiers')
-      .insert([{
-        network_id: tierForm.network_id,
-        min_percent: parseFloat(tierForm.min_percent),
-        max_percent: tierForm.max_percent ? parseFloat(tierForm.max_percent) : null,
-        bonus_amount: parseFloat(tierForm.bonus_amount),
-      }]);
+    if (editingTier) {
+      const { error } = await supabase
+        .from('plan_bonus_tiers')
+        .update({
+          network_id: tierForm.network_id,
+          min_percent: parseFloat(tierForm.min_percent),
+          max_percent: tierForm.max_percent ? parseFloat(tierForm.max_percent) : null,
+          bonus_amount: parseFloat(tierForm.bonus_amount),
+        })
+        .eq('id', editingTier.id);
 
-    if (error) {
-      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
-      return;
+      if (error) {
+        toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      toast({ title: 'Коридор обновлён' });
+    } else {
+      const { error } = await supabase
+        .from('plan_bonus_tiers')
+        .insert([{
+          network_id: tierForm.network_id,
+          min_percent: parseFloat(tierForm.min_percent),
+          max_percent: tierForm.max_percent ? parseFloat(tierForm.max_percent) : null,
+          bonus_amount: parseFloat(tierForm.bonus_amount),
+        }]);
+
+      if (error) {
+        toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      toast({ title: 'Коридор создан' });
     }
 
-    toast({ title: 'Коридор создан' });
     setTierDialogOpen(false);
+    setEditingTier(null);
     setTierForm({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' });
     loadData();
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      if (itemToDelete.type === 'bonus') {
+        const { error } = await supabase
+          .from('network_product_bonuses')
+          .update({ active: false })
+          .eq('id', itemToDelete.id);
+
+        if (error) throw error;
+        toast({ title: 'Базовый бонус удалён' });
+      } else {
+        const { error } = await supabase
+          .from('plan_bonus_tiers')
+          .delete()
+          .eq('id', itemToDelete.id);
+
+        if (error) throw error;
+        toast({ title: 'Коридор удалён' });
+      }
+
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      loadData();
+    } catch (error: any) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const openEditBonus = (bonus: NetworkBonus) => {
+    setEditingBonus(bonus);
+    const product = products.find(p => p.id === bonus.product_variants.products);
+    setBonusForm({
+      network_id: bonus.network_id,
+      product_id: product?.id || '',
+      product_variant_id: bonus.product_variant_id,
+      base_bonus: bonus.base_bonus.toString(),
+    });
+    if (product) loadVariants(product.id);
+    setBonusDialogOpen(true);
+  };
+
+  const openEditTier = (tier: PlanTier) => {
+    setEditingTier(tier);
+    setTierForm({
+      network_id: tier.network_id,
+      min_percent: tier.min_percent.toString(),
+      max_percent: tier.max_percent?.toString() || '',
+      bonus_amount: tier.bonus_amount.toString(),
+    });
+    setTierDialogOpen(true);
+  };
+
+  const openDeleteDialog = (type: 'bonus' | 'tier', id: string) => {
+    setItemToDelete({ type, id });
+    setDeleteDialogOpen(true);
+  };
+
+  const openNewBonus = () => {
+    setEditingBonus(null);
+    setBonusForm({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' });
+    setBonusDialogOpen(true);
+  };
+
+  const openNewTier = () => {
+    setEditingTier(null);
+    setTierForm({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' });
+    setTierDialogOpen(true);
   };
 
   return (
@@ -192,16 +318,22 @@ export default function BonusSchemes() {
           </TabsList>
 
           <TabsContent value="base" className="space-y-4 mt-4">
-            <Dialog open={bonusDialogOpen} onOpenChange={setBonusDialogOpen}>
+            <Dialog open={bonusDialogOpen} onOpenChange={(open) => {
+              setBonusDialogOpen(open);
+              if (!open) {
+                setEditingBonus(null);
+                setBonusForm({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' });
+              }
+            }}>
               <DialogTrigger asChild>
-                <Button className="w-full" onClick={() => setBonusForm({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' })}>
+                <Button className="w-full" onClick={openNewBonus}>
                   <Plus className="w-4 h-4 mr-2" />
                   Добавить бонус
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Добавить базовый бонус</DialogTitle>
+                  <DialogTitle>{editingBonus ? 'Редактировать' : 'Добавить'} базовый бонус</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleBonusSubmit} className="space-y-4">
                   <div className="space-y-2">
@@ -237,7 +369,7 @@ export default function BonusSchemes() {
                       min="0"
                     />
                   </div>
-                  <Button type="submit" className="w-full">Сохранить</Button>
+                  <Button type="submit" className="w-full">{editingBonus ? 'Сохранить' : 'Добавить'}</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -256,7 +388,17 @@ export default function BonusSchemes() {
                         <p className="text-xs text-muted-foreground mt-1">{bonus.networks.name}</p>
                       </div>
                     </div>
-                    <p className="text-lg font-bold text-primary">{formatCurrency(bonus.base_bonus)}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-lg font-bold text-primary">{formatCurrency(bonus.base_bonus)}</p>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEditBonus(bonus)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => openDeleteDialog('bonus', bonus.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -264,16 +406,22 @@ export default function BonusSchemes() {
           </TabsContent>
 
           <TabsContent value="tiers" className="space-y-4 mt-4">
-            <Dialog open={tierDialogOpen} onOpenChange={setTierDialogOpen}>
+            <Dialog open={tierDialogOpen} onOpenChange={(open) => {
+              setTierDialogOpen(open);
+              if (!open) {
+                setEditingTier(null);
+                setTierForm({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' });
+              }
+            }}>
               <DialogTrigger asChild>
-                <Button className="w-full" onClick={() => setTierForm({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' })}>
+                <Button className="w-full" onClick={openNewTier}>
                   <Plus className="w-4 h-4 mr-2" />
                   Добавить коридор
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Добавить коридор перевыполнения</DialogTitle>
+                  <DialogTitle>{editingTier ? 'Редактировать' : 'Добавить'} коридор перевыполнения</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleTierSubmit} className="space-y-4">
                   <div className="space-y-2">
@@ -314,7 +462,7 @@ export default function BonusSchemes() {
                       min="0"
                     />
                   </div>
-                  <Button type="submit" className="w-full">Создать</Button>
+                  <Button type="submit" className="w-full">{editingTier ? 'Сохранить' : 'Создать'}</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -332,7 +480,17 @@ export default function BonusSchemes() {
                         </p>
                       </div>
                     </div>
-                    <p className="text-lg font-bold text-primary">{formatCurrency(tier.bonus_amount)}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-lg font-bold text-primary">{formatCurrency(tier.bonus_amount)}</p>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEditTier(tier)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => openDeleteDialog('tier', tier.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -340,6 +498,23 @@ export default function BonusSchemes() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить этот {itemToDelete?.type === 'bonus' ? 'базовый бонус' : 'коридор'}? 
+              {itemToDelete?.type === 'bonus' && ' Он будет помечен как неактивный.'}
+              {itemToDelete?.type === 'tier' && ' Это действие нельзя отменить.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Удалить</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <MobileNav />
     </div>
