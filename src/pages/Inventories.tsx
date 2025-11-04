@@ -21,7 +21,8 @@ interface Product {
 
 interface ProductVariant {
   id: string;
-  memory: string;
+  memory_gb: number;
+  storage_gb: number;
 }
 
 interface Store {
@@ -66,7 +67,7 @@ export default function Inventories() {
   const loadData = async () => {
     const { data: invData } = await supabase
       .from('inventories')
-      .select(`*, products(id, name), product_variants(id, memory), stores(id, name, city)`)
+      .select(`*, products(id, name), product_variants(id, memory_gb, storage_gb), stores(id, name, city)`)
       .order('last_updated', { ascending: false });
 
     const { data: prodData } = await supabase.from('products').select('id, name').eq('active', true).order('name');
@@ -78,7 +79,7 @@ export default function Inventories() {
   };
 
   const loadVariants = async (productId: string) => {
-    const { data } = await supabase.from('product_variants').select('id, memory').eq('product_id', productId).eq('active', true);
+    const { data } = await supabase.from('product_variants').select('id, memory_gb, storage_gb').eq('product_id', productId).eq('active', true).order('memory_gb, storage_gb');
     if (data) setVariants(data);
   };
 
@@ -137,10 +138,10 @@ export default function Inventories() {
                   </Select>
                 </div>
                 {formData.product_id && variants.length > 0 && (
-                  <div className="space-y-2"><Label>Память</Label>
+                  <div className="space-y-2"><Label>Память / Хранилище</Label>
                     <Select value={formData.product_variant_id} onValueChange={(v) => setFormData({ ...formData, product_variant_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Выберите память" /></SelectTrigger>
-                      <SelectContent>{variants.map((v) => <SelectItem key={v.id} value={v.id}>{v.memory}</SelectItem>)}</SelectContent>
+                      <SelectTrigger><SelectValue placeholder="Выберите вариант" /></SelectTrigger>
+                      <SelectContent>{variants.map((v) => <SelectItem key={v.id} value={v.id}>{v.memory_gb}GB / {v.storage_gb}GB</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                 )}
@@ -166,7 +167,7 @@ export default function Inventories() {
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1"><Package className="w-4 h-4 text-primary" /><h3 className="font-semibold">{inv.products.name}</h3></div>
-                  {inv.product_variants && <p className="text-sm text-muted-foreground">Память: {inv.product_variants.memory}</p>}
+                  {inv.product_variants && <p className="text-sm text-muted-foreground">{inv.product_variants.memory_gb}GB / {inv.product_variants.storage_gb}GB</p>}
                   <p className="text-sm text-muted-foreground">{inv.stores.name}, {inv.stores.city}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <p className="text-lg font-bold">{formatNumber(inv.quantity)} шт</p>

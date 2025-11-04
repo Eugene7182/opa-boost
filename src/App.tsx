@@ -32,6 +32,7 @@ import DecisionHub from "./pages/DecisionHub";
 import Simulator from "./pages/Simulator";
 import Notifications from "./pages/Notifications";
 import FocusCampaigns from "./pages/FocusCampaigns";
+import Networks from "./pages/Networks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -277,6 +278,16 @@ const App = () => (
                 <ProtectedRoute>
                   <RoleGuard allowedRoles={['admin', 'office', 'promoter']}>
                     <FocusCampaigns />
+                  </RoleGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/networks"
+              element={
+                <ProtectedRoute>
+                  <RoleGuard allowedRoles={['admin', 'office']}>
+                    <Networks />
                   </RoleGuard>
                 </ProtectedRoute>
               }

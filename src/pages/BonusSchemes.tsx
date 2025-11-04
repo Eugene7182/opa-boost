@@ -1,202 +1,344 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { BackButton } from '@/components/BackButton';
 import { MobileNav } from '@/components/MobileNav';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { BackButton } from '@/components/BackButton';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Plus, DollarSign, TrendingUp } from 'lucide-react';
 import { z } from 'zod';
+import { formatCurrency } from '@/lib/formatters';
 
-const bonusSchemeSchema = z.object({
-  name: z.string().trim().min(1, { message: 'Название не может быть пустым' }).max(200, { message: 'Название слишком длинное' }),
-  bonus_percent: z.number().min(0, { message: 'Процент бонуса не может быть отрицательным' }).max(100, { message: 'Процент бонуса не может превышать 100%' }),
-  min_quantity: z.number().int({ message: 'Количество должно быть целым числом' }).positive({ message: 'Количество должно быть положительным' }).max(10000, { message: 'Максимум 10000 штук' }),
-  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Неверный формат даты' }),
+const bonusSchema = z.object({
+  network_id: z.string().uuid(),
+  product_variant_id: z.string().uuid(),
+  base_bonus: z.number().min(0, 'Бонус не может быть отрицательным').max(1000000, 'Максимум 1,000,000'),
 });
 
-interface Product {
+const tierSchema = z.object({
+  network_id: z.string().uuid(),
+  min_percent: z.number().min(0).max(500),
+  max_percent: z.number().min(0).max(500).nullable(),
+  bonus_amount: z.number().min(0).max(10000000),
+});
+
+interface NetworkBonus {
   id: string;
-  name: string;
+  network_id: string;
+  product_variant_id: string;
+  base_bonus: number;
+  networks: { name: string };
+  product_variants: { memory_gb: number; storage_gb: number; products: { name: string } };
 }
 
-interface BonusScheme {
+interface PlanTier {
   id: string;
-  name: string;
-  bonus_percent: number;
-  min_quantity: number;
-  products: { name: string } | null;
+  network_id: string;
+  min_percent: number;
+  max_percent: number | null;
+  bonus_amount: number;
+  networks: { name: string };
 }
 
 export default function BonusSchemes() {
   const { toast } = useToast();
-  const [schemes, setSchemes] = useState<BonusScheme[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    product_id: '',
-    bonus_percent: '',
-    min_quantity: '1',
-    start_date: new Date().toISOString().split('T')[0],
-  });
+  const [bonuses, setBonuses] = useState<NetworkBonus[]>([]);
+  const [tiers, setTiers] = useState<PlanTier[]>([]);
+  const [networks, setNetworks] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [variants, setVariants] = useState<any[]>([]);
+  const [bonusDialogOpen, setBonusDialogOpen] = useState(false);
+  const [tierDialogOpen, setTierDialogOpen] = useState(false);
+  const [bonusForm, setBonusForm] = useState({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' });
+  const [tierForm, setTierForm] = useState({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' });
 
   useEffect(() => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (bonusForm.product_id) {
+      loadVariants(bonusForm.product_id);
+    }
+  }, [bonusForm.product_id]);
+
   const loadData = async () => {
-    const { data: schemesData } = await supabase
-      .from('bonus_schemes')
-      .select('*, products(name)')
+    const { data: bonusData } = await supabase
+      .from('network_product_bonuses')
+      .select('*, networks(name), product_variants(memory_gb, storage_gb, products(name))')
       .eq('active', true)
-      .order('name');
+      .order('networks(name)');
 
-    const { data: productsData } = await supabase
-      .from('products')
-      .select('id, name')
-      .eq('active', true)
-      .order('name');
+    const { data: tierData } = await supabase
+      .from('plan_bonus_tiers')
+      .select('*, networks(name)')
+      .order('networks(name), min_percent');
 
-    if (schemesData) setSchemes(schemesData);
-    if (productsData) setProducts(productsData);
+    const { data: networkData } = await supabase.from('networks').select('*').eq('active', true).order('name');
+    const { data: productData } = await supabase.from('products').select('*').eq('active', true).order('name');
+
+    if (bonusData) setBonuses(bonusData as any);
+    if (tierData) setTiers(tierData as any);
+    if (networkData) setNetworks(networkData);
+    if (productData) setProducts(productData);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const loadVariants = async (productId: string) => {
+    const { data } = await supabase
+      .from('product_variants')
+      .select('*')
+      .eq('product_id', productId)
+      .eq('active', true)
+      .order('memory_gb, storage_gb');
+    
+    if (data) setVariants(data);
+  };
+
+  const handleBonusSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate input
-    const validation = bonusSchemeSchema.safeParse({
-      name: formData.name,
-      bonus_percent: parseFloat(formData.bonus_percent),
-      min_quantity: parseInt(formData.min_quantity),
-      start_date: formData.start_date,
+    const validation = bonusSchema.safeParse({
+      network_id: bonusForm.network_id,
+      product_variant_id: bonusForm.product_variant_id,
+      base_bonus: parseFloat(bonusForm.base_bonus),
     });
 
     if (!validation.success) {
-      const errorMessage = validation.error.errors.map(e => e.message).join(', ');
-      toast({ 
-        title: 'Ошибка валидации', 
-        description: errorMessage, 
-        variant: 'destructive' 
+      toast({
+        title: 'Ошибка валидации',
+        description: validation.error.errors.map(e => e.message).join(', '),
+        variant: 'destructive',
       });
       return;
     }
 
-    const { error } = await supabase.from('bonus_schemes').insert([{
-      name: validation.data.name,
-      bonus_percent: validation.data.bonus_percent,
-      min_quantity: validation.data.min_quantity,
-      start_date: validation.data.start_date,
-      product_id: formData.product_id || null,
-      active: true,
-    }]);
+    const { error } = await supabase
+      .from('network_product_bonuses')
+      .upsert([{
+        network_id: bonusForm.network_id,
+        product_variant_id: bonusForm.product_variant_id,
+        base_bonus: parseFloat(bonusForm.base_bonus),
+      }], { onConflict: 'network_id,product_variant_id' });
 
     if (error) {
       toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
       return;
     }
 
-    toast({ title: 'Схема бонусов создана' });
-    setDialogOpen(false);
-    setFormData({ name: '', product_id: '', bonus_percent: '', min_quantity: '1', start_date: new Date().toISOString().split('T')[0] });
+    toast({ title: 'Бонус сохранён' });
+    setBonusDialogOpen(false);
+    setBonusForm({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' });
+    loadData();
+  };
+
+  const handleTierSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const validation = tierSchema.safeParse({
+      network_id: tierForm.network_id,
+      min_percent: parseFloat(tierForm.min_percent),
+      max_percent: tierForm.max_percent ? parseFloat(tierForm.max_percent) : null,
+      bonus_amount: parseFloat(tierForm.bonus_amount),
+    });
+
+    if (!validation.success) {
+      toast({
+        title: 'Ошибка валидации',
+        description: validation.error.errors.map(e => e.message).join(', '),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('plan_bonus_tiers')
+      .insert([{
+        network_id: tierForm.network_id,
+        min_percent: parseFloat(tierForm.min_percent),
+        max_percent: tierForm.max_percent ? parseFloat(tierForm.max_percent) : null,
+        bonus_amount: parseFloat(tierForm.bonus_amount),
+      }]);
+
+    if (error) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: 'Коридор создан' });
+    setTierDialogOpen(false);
+    setTierForm({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' });
     loadData();
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-card border-b border-border p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <BackButton to="/dashboard" />
-            <h1 className="text-xl font-bold">Схемы бонусов</h1>
-          </div>
-          
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="icon">
-                <Plus className="w-5 h-5" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Новая схема</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Название</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Продукт (опционально)</Label>
-                  <Select value={formData.product_id} onValueChange={(value) => setFormData({ ...formData, product_id: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Все продукты" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Все продукты</SelectItem>
-                      {products.map(p => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Процент бонуса</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formData.bonus_percent}
-                    onChange={(e) => setFormData({ ...formData, bonus_percent: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Мин. количество</Label>
-                  <Input
-                    type="number"
-                    value={formData.min_quantity}
-                    onChange={(e) => setFormData({ ...formData, min_quantity: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Дата начала</Label>
-                  <Input
-                    type="date"
-                    value={formData.start_date}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full">Создать</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+        <div className="flex items-center gap-3">
+          <BackButton to="/dashboard" />
+          <h1 className="text-xl font-bold">Бонусные схемы</h1>
         </div>
       </header>
 
-      <main className="p-4 space-y-3">
-        {schemes.map((scheme) => (
-          <Card key={scheme.id} className="p-4">
-            <h3 className="font-semibold text-lg">{scheme.name}</h3>
-            <p className="text-sm text-muted-foreground">
-              {scheme.products ? scheme.products.name : 'Все продукты'}
-            </p>
-            <div className="flex gap-4 mt-2">
-              <span className="text-success font-bold">{scheme.bonus_percent}%</span>
-              <span className="text-muted-foreground">Мин: {scheme.min_quantity} шт</span>
+      <main className="p-4">
+        <Tabs defaultValue="base" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="base">Базовые бонусы</TabsTrigger>
+            <TabsTrigger value="tiers">Перевыполнение</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="base" className="space-y-4 mt-4">
+            <Dialog open={bonusDialogOpen} onOpenChange={setBonusDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full" onClick={() => setBonusForm({ network_id: '', product_id: '', product_variant_id: '', base_bonus: '' })}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Добавить бонус
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Добавить базовый бонус</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleBonusSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Сеть</Label>
+                    <Select value={bonusForm.network_id} onValueChange={(v) => setBonusForm({ ...bonusForm, network_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Выберите сеть" /></SelectTrigger>
+                      <SelectContent>{networks.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Продукт</Label>
+                    <Select value={bonusForm.product_id} onValueChange={(v) => setBonusForm({ ...bonusForm, product_id: v, product_variant_id: '' })}>
+                      <SelectTrigger><SelectValue placeholder="Выберите продукт" /></SelectTrigger>
+                      <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {bonusForm.product_id && variants.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Вариант</Label>
+                      <Select value={bonusForm.product_variant_id} onValueChange={(v) => setBonusForm({ ...bonusForm, product_variant_id: v })}>
+                        <SelectTrigger><SelectValue placeholder="Выберите вариант" /></SelectTrigger>
+                        <SelectContent>{variants.map(v => <SelectItem key={v.id} value={v.id}>{v.memory_gb}GB / {v.storage_gb}GB</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label>Базовый бонус (₸)</Label>
+                    <Input
+                      type="number"
+                      value={bonusForm.base_bonus}
+                      onChange={(e) => setBonusForm({ ...bonusForm, base_bonus: e.target.value })}
+                      required
+                      min="0"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">Сохранить</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <div className="space-y-3">
+              {bonuses.map((bonus) => (
+                <Card key={bonus.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <DollarSign className="w-5 h-5 text-primary" />
+                      <div>
+                        <h3 className="font-semibold">{(bonus.product_variants as any).products.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {bonus.product_variants.memory_gb}GB / {bonus.product_variants.storage_gb}GB
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{bonus.networks.name}</p>
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold text-primary">{formatCurrency(bonus.base_bonus)}</p>
+                  </div>
+                </Card>
+              ))}
             </div>
-          </Card>
-        ))}
+          </TabsContent>
+
+          <TabsContent value="tiers" className="space-y-4 mt-4">
+            <Dialog open={tierDialogOpen} onOpenChange={setTierDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full" onClick={() => setTierForm({ network_id: '', min_percent: '', max_percent: '', bonus_amount: '' })}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Добавить коридор
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Добавить коридор перевыполнения</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleTierSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Сеть</Label>
+                    <Select value={tierForm.network_id} onValueChange={(v) => setTierForm({ ...tierForm, network_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Выберите сеть" /></SelectTrigger>
+                      <SelectContent>{networks.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>От (%, включительно)</Label>
+                    <Input
+                      type="number"
+                      value={tierForm.min_percent}
+                      onChange={(e) => setTierForm({ ...tierForm, min_percent: e.target.value })}
+                      required
+                      min="0"
+                      max="500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>До (%, включительно, пусто = без лимита)</Label>
+                    <Input
+                      type="number"
+                      value={tierForm.max_percent}
+                      onChange={(e) => setTierForm({ ...tierForm, max_percent: e.target.value })}
+                      min="0"
+                      max="500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Бонус (₸)</Label>
+                    <Input
+                      type="number"
+                      value={tierForm.bonus_amount}
+                      onChange={(e) => setTierForm({ ...tierForm, bonus_amount: e.target.value })}
+                      required
+                      min="0"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">Создать</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <div className="space-y-3">
+              {tiers.map((tier) => (
+                <Card key={tier.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-5 h-5 text-primary" />
+                      <div>
+                        <h3 className="font-semibold">{tier.networks.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {tier.min_percent}% - {tier.max_percent !== null ? `${tier.max_percent}%` : '∞'}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold text-primary">{formatCurrency(tier.bonus_amount)}</p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       <MobileNav />
