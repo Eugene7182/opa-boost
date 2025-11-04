@@ -34,6 +34,9 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+# При разработке в удалённом контейнере используйте скрипт, который слушает 0.0.0.0 и не чистит лог:
+scripts/run_frontend.sh
 ```
 
 **Edit a file directly in GitHub**
