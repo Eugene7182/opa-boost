@@ -1,33 +1,24 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
-import { VitePWA } from 'vite-plugin-pwa';
+import path from "node:path";
 
-export default defineConfig(({ mode }) => ({
+import react from "@vitejs/plugin-react-swc";
+import { defineConfig } from "vite";
+
+const webappRoot = path.resolve(__dirname, "src/webapp");
+
+export default defineConfig({
+  root: webappRoot,
   server: {
-    host: "::",
-    port: 8080,
+    host: "0.0.0.0",
+    port: 5173,
   },
-  plugins: [
-    react(),
-    mode === "development" && componentTagger(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      manifest: {
-        name: 'OPA',
-        short_name: 'OPA',
-        theme_color: '#00a884',
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 // 5MB
-      }
-    })
-  ].filter(Boolean),
+  build: {
+    outDir: path.resolve(__dirname, "dist/webapp"),
+    emptyOutDir: true,
+  },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(webappRoot, "src"),
     },
   },
-}));
+  plugins: [react()],
+});

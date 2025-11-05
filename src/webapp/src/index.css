@@ -1,0 +1,17 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #0ea5e9 0%, #0b1120 60%);
+  min-height: 100vh;
+}
+
+main {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  margin-top: 48px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+}
