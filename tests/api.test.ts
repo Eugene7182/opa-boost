@@ -6,16 +6,16 @@ import { app } from "../src/server"
 const prisma = new PrismaClient()
 
 beforeAll(async () => {
-  const region = await prisma.region.upsert({
+  const region = await prisma.legacyRegion.upsert({
     where: { name: "Алматы" },
     update: {},
     create: { name: "Алматы" }
   })
 
   const storeName = "Магазин А"
-  let store = await prisma.store.findFirst({ where: { name: storeName } })
+  let store = await prisma.legacyStore.findFirst({ where: { name: storeName } })
   if (!store) {
-    store = await prisma.store.create({ data: { name: storeName, regionId: region.id } })
+    store = await prisma.legacyStore.create({ data: { name: storeName, regionId: region.id } })
   }
 
   const skuCode = "SKU-1"
@@ -24,7 +24,7 @@ beforeAll(async () => {
     sku = await prisma.sKU.create({ data: { code: skuCode, name: "Товар 1" } })
   }
 
-  await prisma.user.upsert({
+  await prisma.legacyUser.upsert({
     where: { tgId: BigInt(1) },
     update: { role: "ADMIN" },
     create: { tgId: BigInt(1), firstName: "Admin", role: "ADMIN" }

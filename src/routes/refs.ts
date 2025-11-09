@@ -4,7 +4,7 @@ import { db } from "../db"
 const r = Router()
 
 r.get("/regions", async (_req, res) => {
-  const regions = await db.region.findMany()
+  const regions = await db.legacyRegion.findMany()
   res.json(regions)
 })
 
@@ -18,7 +18,7 @@ r.get("/stores", async (req, res) => {
     }
   }
 
-  const stores = await db.store.findMany({
+  const stores = await db.legacyStore.findMany({
     where: regionId ? { regionId } : {}
   })
   res.json(stores)
