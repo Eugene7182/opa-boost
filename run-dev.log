@@ -22,3 +22,4 @@
 [dev:web]   ➜  Network: http://10.255.255.254:5175/
 [dev:web]   ➜  Network: http://192.168.10.22:5175/
 [dev:server] Server http://localhost:3000  (WEBAPP_URL=https://village-britney-successfully-competing.trycloudflare.com/)
+[dev:bot] Bot did not launch (token may be invalid) 409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
