@@ -1,34 +1,37 @@
-const baseUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || ''
-const withBase = (u: string) => (baseUrl ? `${baseUrl}${u}` : u)
+const API = import.meta.env.VITE_API_URL;
+const baseUrl = (API ?? "").replace(/\/$/, "");
+const withBase = (u: string) => (baseUrl ? `${baseUrl}${u}` : u);
 
-let authToken: string | null = null
+let authToken: string | null = null;
 export const setAuthToken = (token: string | null) => {
-  authToken = token
-}
+  authToken = token;
+};
 
 const buildHeaders = (headers?: HeadersInit) => {
-  const next = new Headers(headers || {})
+  const next = new Headers(headers || {});
   if (authToken) {
-    next.set('Authorization', `Bearer ${authToken}`)
+    next.set("Authorization", `Bearer ${authToken}`);
   }
-  return next
-}
+  return next;
+};
 
 const request = async (u: string, init: RequestInit = {}) => {
   const response = await fetch(withBase(u), {
-    credentials: 'include',
+    credentials: "include",
     ...init,
     headers: buildHeaders(init.headers)
-  })
-  return response.json()
-}
+  });
+  return response.json();
+};
 
 export const api = {
   get: (u: string) => request(u),
-  post: (u: string, b: any) =>
+  post: (u: string, b: unknown) =>
     request(u, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(b)
     })
-}
+};
+
+export { API };
