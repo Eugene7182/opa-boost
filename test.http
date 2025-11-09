@@ -1,0 +1,19 @@
+### регионы
+GET http://localhost:3000/api/refs/regions
+
+### товары
+GET http://localhost:3000/api/refs/sku
+
+### сделать продажу
+POST http://localhost:3000/api/sales
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "storeId": 1,
+  "skuId": 1,
+  "qty": 2
+}
+
+### остатки
+GET http://localhost:3000/api/stocks?store=1

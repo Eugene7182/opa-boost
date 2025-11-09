@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: "7573257249:AAFiz-yCiGBVXcP7R6NB6656oj-2MPSWF6M"
+      WEBAPP_URL: "http://localhost:3000"
+      JWT_SECRET: "test_secret_key_123"
+      PORT: "3000"
+      DATABASE_URL: "file:./dev.db"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma migrate dev --name init --skip-seed
+      - run: npm run test

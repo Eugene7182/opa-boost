@@ -1,0 +1,24 @@
+
+> dev
+> concurrently "npm:dev:server" "npm:dev:bot" "npm:dev:web"
+
+[dev:bot] 
+[dev:bot] > dev:bot
+[dev:bot] > tsx watch --env-file .env.local src/bot.ts
+[dev:bot] 
+[dev:server] 
+[dev:server] > dev:server
+[dev:server] > tsx watch --env-file .env.local src/server.ts
+[dev:server] 
+[dev:web] 
+[dev:web] > dev:web
+[dev:web] > vite --config vite.config.ts
+[dev:web] 
+[dev:web] Re-optimizing dependencies because lockfile has changed
+[dev:web] 
+[dev:web]   VITE v5.4.21  ready in 1930 ms
+[dev:web] 
+[dev:web]   ➜  Local:   http://localhost:5175/
+[dev:web]   ➜  Network: http://10.255.255.254:5175/
+[dev:web]   ➜  Network: http://192.168.10.22:5175/
+[dev:server] Server http://localhost:3000  (WEBAPP_URL=https://village-britney-successfully-competing.trycloudflare.com/)

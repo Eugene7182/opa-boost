@@ -1,0 +1,68 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  tgId      BigInt   @unique
+  firstName String?
+  lastName  String?
+  role      String   @default("PROMOTER")
+  createdAt DateTime @default(now())
+  sales     Sale[]
+}
+
+model Region {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  stores Store[]
+}
+
+model Store {
+  id       Int     @id @default(autoincrement())
+  name     String
+  address  String?
+  regionId Int
+  region   Region  @relation(fields: [regionId], references: [id])
+  stocks   Stock[]
+  sales    Sale[]
+}
+
+model SKU {
+  id     Int     @id @default(autoincrement())
+  code   String  @unique
+  name   String
+  unit   String  @default("pcs")
+  stocks Stock[]
+  sales  Sale[]
+}
+
+model Stock {
+  storeId Int
+  skuId   Int
+  qty     Decimal @default(0)
+  store   Store   @relation(fields: [storeId], references: [id])
+  sku     SKU     @relation(fields: [skuId], references: [id])
+
+  @@id([storeId, skuId])
+}
+
+model Sale {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  storeId   Int
+  skuId     Int
+  qty       Decimal
+  price     Decimal?
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  store Store @relation(fields: [storeId], references: [id])
+  sku   SKU   @relation(fields: [skuId], references: [id])
+}
