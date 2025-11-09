@@ -8,8 +8,7 @@ generator client {
   binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
 }
 
-
-model User {
+model LegacyUser {
   id        Int      @id @default(autoincrement())
   tgId      BigInt   @unique
   firstName String?
@@ -17,22 +16,28 @@ model User {
   role      String   @default("PROMOTER")
   createdAt DateTime @default(now())
   sales     Sale[]
+
+  @@map("User")
 }
 
-model Region {
-  id     Int     @id @default(autoincrement())
-  name   String  @unique
-  stores Store[]
+model LegacyRegion {
+  id     Int           @id @default(autoincrement())
+  name   String        @unique
+  stores LegacyStore[]
+
+  @@map("Region")
 }
 
-model Store {
-  id       Int     @id @default(autoincrement())
+model LegacyStore {
+  id       Int          @id @default(autoincrement())
   name     String
   address  String?
   regionId Int
-  region   Region  @relation(fields: [regionId], references: [id])
+  region   LegacyRegion @relation(fields: [regionId], references: [id])
   stocks   Stock[]
   sales    Sale[]
+
+  @@map("Store")
 }
 
 model SKU {
@@ -48,8 +53,8 @@ model Stock {
   storeId Int
   skuId   Int
   qty     Decimal @default(0)
-  store   Store   @relation(fields: [storeId], references: [id])
-  sku     SKU     @relation(fields: [skuId], references: [id])
+  store   LegacyStore @relation(fields: [storeId], references: [id])
+  sku     SKU         @relation(fields: [skuId], references: [id])
 
   @@id([storeId, skuId])
 }
@@ -63,7 +68,80 @@ model Sale {
   price     Decimal?
   createdAt DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id])
-  store Store @relation(fields: [storeId], references: [id])
-  sku   SKU   @relation(fields: [skuId], references: [id])
+  user  LegacyUser  @relation(fields: [userId], references: [id])
+  store LegacyStore @relation(fields: [storeId], references: [id])
+  sku   SKU         @relation(fields: [skuId], references: [id])
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Network {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  regions   Region[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Region {
+  id         String   @id @default(cuid())
+  name       String
+  networkId  String
+  network    Network  @relation(fields: [networkId], references: [id])
+  offices    Office[]
+  supervisors User[]   @relation("RegionSupervisors")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("OrgRegion")
+}
+
+model Office {
+  id        String   @id @default(cuid())
+  name      String
+  regionId  String
+  region    Region   @relation(fields: [regionId], references: [id])
+  stores    Store[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("OrgOffice")
+}
+
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  officeId  String
+  office    Office   @relation(fields: [officeId], references: [id])
+  promoters User[]   @relation("StorePromoters")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("OrgStore")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  telegramId   String?  @unique
+  fullName     String?
+  phone        String?
+  email        String?
+  roleId       String?
+  role         Role?    @relation(fields: [roleId], references: [id])
+  regionId     String?
+  region       Region?  @relation("RegionSupervisors", fields: [regionId], references: [id])
+  storeId      String?
+  store        Store?   @relation("StorePromoters", fields: [storeId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("OrgUser")
 }
