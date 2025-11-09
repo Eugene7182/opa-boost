@@ -1,25 +1,11 @@
 {
-  "name": "opa-boost-miniapp",
-  "private": true,
-  "type": "module",
   "scripts": {
-    "dev:web": "vite --config vite.config.ts",
-    "dev:server": "tsx watch --env-file .env.local src/server.ts",
-    "dev:bot": "tsx watch --env-file .env.local src/bot.ts",
-    "dev": "concurrently \"npm:dev:server\" \"npm:dev:bot\" \"npm:dev:web\"",
-    "build:web": "vite build",
-    "build:server": "tsc --project tsconfig.json --outDir dist-server",
-    "build": "npm run build:web && npm run build:server",
-    "start": "node dist-server/server.js",
-    "setup": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev --name init",
-    "prisma:seed": "tsx prisma/seed.ts",
-    "postinstall": "prisma generate",
-    "test": "vitest run --reporter=dot",
-    "test:watch": "vitest",
-    "lint": "tsc --noEmit"
-  },
+    "build": "npm run build:server",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "node dist/server.js"
+  }
+}
+,
   "dependencies": {
     "@prisma/client": "^5.18.0",
     "body-parser": "^1.20.3",
