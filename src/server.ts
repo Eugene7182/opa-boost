@@ -31,6 +31,13 @@ const JWT_SECRET = env.JWT_SECRET;
 
 const urlencoded = express.urlencoded({ extended: false });
 
+function parseAdminIds(src?: string) {
+  return (src || "")
+    .split(",")
+    .map((s) => s.trim().replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, ""))
+    .filter(Boolean);
+}
+
 const checkTelegramInitData = (initData: string, botToken: string): boolean => {
   if (!initData || !botToken) return false;
 
@@ -118,14 +125,37 @@ app.post("/api/auth/telegram", async (req, res) => {
       include: { role: true }
     });
 
-    const payload: JwtPayload = {
-      sub: dbUser.id,
-      tg: { id: tg.id, username: tg.username },
-      role: dbUser.role?.name ?? "Promoter",
-      roleId: dbUser.roleId ?? null
-    };
+    const adminIds = parseAdminIds(process.env.ADMIN_TG_IDS);
+    const isAdmin = adminIds.includes(String(tg.id));
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+    const [adminRole, promoterRole] = await Promise.all([
+      prisma.role.upsert({ where: { name: "Admin" }, update: {}, create: { name: "Admin" } }),
+      prisma.role.upsert({ where: { name: "Promoter" }, update: {}, create: { name: "Promoter" } })
+    ]);
+
+    let role = dbUser.role?.name as "Admin" | "Promoter" | undefined;
+    let roleId = dbUser.roleId ?? null;
+
+    if (isAdmin && role !== "Admin") {
+      await prisma.user.update({ where: { id: dbUser.id }, data: { roleId: adminRole.id } });
+      role = "Admin";
+      roleId = adminRole.id;
+    } else if (!role) {
+      await prisma.user.update({ where: { id: dbUser.id }, data: { roleId: promoterRole.id } });
+      role = "Promoter";
+      roleId = promoterRole.id;
+    }
+
+    const token = jwt.sign(
+      {
+        sub: dbUser.id,
+        tg: { id: tg.id, username: tg.username },
+        role: role || (isAdmin ? "Admin" : "Promoter"),
+        roleId
+      },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     return res.json({ ok: true, token });
   } catch (error) {
@@ -164,7 +194,7 @@ app.get("/api/me", auth, async (req: AuthedRequest, res) => {
 
     const user = orgUser ?? legacyUser ?? payload;
 
-    return res.json({ ok: true, user, orgUser, legacyUser });
+    return res.json({ ok: true, user, orgUser, legacyUser, role: payload.role ?? null });
   } catch (error) {
     console.error("Failed to load user", error);
     return res.status(500).json({ ok: false, error: "failed to load user" });
