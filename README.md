@@ -97,3 +97,7 @@ fetch(`${import.meta.env.VITE_API_URL}/api/me`, {
 ```
 
 See `PROJECT_OVERVIEW.md` for a deeper explanation of architecture and operational notes.
+
+## Deployment prompt for AI assistants
+
+Подробный промт для авто-деплоя проекта на Render, Vercel и Neon доступен в файле [`docs/DEPLOY_PROMPT.md`](docs/DEPLOY_PROMPT.md). Скопируйте его целиком в CodeX / Copilot Chat или другой AI-IDE ассистент и следуйте шагам, чтобы получить продакшн-инфраструктуру на бесплатных тарифах.
