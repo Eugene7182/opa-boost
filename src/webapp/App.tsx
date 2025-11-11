@@ -104,10 +104,31 @@ export default function App() {
   }, [authToken]);
 
   useEffect(() => {
-    const t = getToken();
-    const r = getRoleFromJWT(t);
-    if (r) setRole(r.toLowerCase());
-    else setRole("promoter");
+    // Принудительно обновляем токен из бэка, чтобы Telegram WebView увидел свежую роль.
+    fetch("/api/auth/telegram")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.token) {
+          sessionStorage.lastAuth = JSON.stringify({ token: data.token });
+          const roleFromApi = getRoleFromJWT(data.token);
+          if (roleFromApi) {
+            setRole(roleFromApi.toLowerCase());
+            return;
+          }
+        }
+
+        const token = getToken();
+        const fallbackRole = getRoleFromJWT(token);
+        if (fallbackRole) setRole(fallbackRole.toLowerCase());
+        else setRole("promoter");
+      })
+      .catch((error) => {
+        console.error("Failed to refresh auth token", error);
+        const token = getToken();
+        const fallbackRole = getRoleFromJWT(token);
+        if (fallbackRole) setRole(fallbackRole.toLowerCase());
+        else setRole("promoter");
+      });
   }, []);
 
   return (
