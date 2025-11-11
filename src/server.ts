@@ -31,13 +31,6 @@ const JWT_SECRET = env.JWT_SECRET;
 
 const urlencoded = express.urlencoded({ extended: false });
 
-function parseAdminIds(src?: string) {
-  return (src || "")
-    .split(",")
-    .map((s) => s.trim().replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, ""))
-    .filter(Boolean);
-}
-
 const checkTelegramInitData = (initData: string, botToken: string): boolean => {
   if (!initData || !botToken) return false;
 
@@ -125,6 +118,14 @@ app.post("/api/auth/telegram", async (req, res) => {
       include: { role: true }
     });
 
+    // ===== Role assignment patch =====
+    function parseAdminIds(src?: string) {
+      return (src || "")
+        .split(",")
+        .map((s) => s.trim().replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, ""))
+        .filter(Boolean);
+    }
+
     const adminIds = parseAdminIds(process.env.ADMIN_TG_IDS);
     const isAdmin = adminIds.includes(String(tg.id));
 
@@ -133,25 +134,21 @@ app.post("/api/auth/telegram", async (req, res) => {
       prisma.role.upsert({ where: { name: "Promoter" }, update: {}, create: { name: "Promoter" } })
     ]);
 
-    let role = dbUser.role?.name as "Admin" | "Promoter" | undefined;
-    let roleId = dbUser.roleId ?? null;
-
-    if (isAdmin && role !== "Admin") {
+    let roleName = dbUser.role?.name;
+    if (isAdmin && roleName !== "Admin") {
       await prisma.user.update({ where: { id: dbUser.id }, data: { roleId: adminRole.id } });
-      role = "Admin";
-      roleId = adminRole.id;
-    } else if (!role) {
+      roleName = "Admin";
+    } else if (!roleName) {
       await prisma.user.update({ where: { id: dbUser.id }, data: { roleId: promoterRole.id } });
-      role = "Promoter";
-      roleId = promoterRole.id;
+      roleName = "Promoter";
     }
+    // ===== End patch =====
 
     const token = jwt.sign(
       {
         sub: dbUser.id,
         tg: { id: tg.id, username: tg.username },
-        role: role || (isAdmin ? "Admin" : "Promoter"),
-        roleId
+        role: roleName
       },
       JWT_SECRET,
       { expiresIn: "7d" }
@@ -193,8 +190,12 @@ app.get("/api/me", auth, async (req: AuthedRequest, res) => {
     ]);
 
     const user = orgUser ?? legacyUser ?? payload;
+    const roleName =
+      user && typeof user === "object" && "role" in user && user.role && typeof user.role === "object"
+        ? (user.role as { name?: string } | null)?.name ?? null
+        : null;
 
-    return res.json({ ok: true, user, orgUser, legacyUser, role: payload.role ?? null });
+    return res.json({ ok: true, user, orgUser, legacyUser, role: roleName });
   } catch (error) {
     console.error("Failed to load user", error);
     return res.status(500).json({ ok: false, error: "failed to load user" });

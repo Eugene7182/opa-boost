@@ -58,8 +58,8 @@ async function seedOrgModels() {
 }
 
 async function main() {
-  const roles = ["Admin", "Promoter", "Office", "Supervisor", "Trainer"];
-  for (const name of roles) {
+  const baseRoles = ["Admin", "Promoter", "Office", "Supervisor", "Trainer"];
+  for (const name of baseRoles) {
     await db.role.upsert({ where: { name }, update: {}, create: { name } });
   }
 
