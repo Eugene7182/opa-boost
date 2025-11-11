@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 
 export default defineConfig({
   plugins: [react()],
-  root: resolve(__dirname, "src", "webapp"),
+  root: resolve(__dirname, "webapp"),
   server: {
     host: true,
     port: 8080,
@@ -18,7 +18,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "src", "webapp")
+      "@": resolve(__dirname, "webapp")
     }
   }
 })

@@ -16,9 +16,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["./src/webapp/*"]
+      "@/*": ["./webapp/*"]
     }
   },
-  "include": ["src/webapp/**/*"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["webapp/**/*", "integrations/**/*"]
 }
