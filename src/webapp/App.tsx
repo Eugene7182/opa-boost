@@ -2,6 +2,29 @@ import { useEffect, useState } from "react";
 import { ready, initData } from "./telegram";
 import { api, setAuthToken, API } from "./api";
 
+// Читаем сохранённый access-токен из sessionStorage/localStorage, чтобы извлечь роль из JWT.
+function getToken(): string | null {
+  try {
+    return (
+      JSON.parse(sessionStorage.lastAuth || localStorage.lastAuth || "{}")
+        .token || localStorage.getItem("token")
+    );
+  } catch {
+    return localStorage.getItem("token");
+  }
+}
+
+// Достаём роль из payload JWT; при ошибке возвращаем null, чтобы отработал дефолт.
+function getRoleFromJWT(token?: string | null): string | null {
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return (payload.role as string | undefined) || null;
+  } catch {
+    return null;
+  }
+}
+
 type Region = { id: number; name: string };
 type Store = { id: number; name: string };
 type SKU = { id: number; code: string; name: string };
@@ -14,6 +37,7 @@ export default function App() {
   const [authToken, setAuthTokenState] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string>("unknown");
 
   const apiBase = (API ?? "").replace(/\/$/, "");
   const storageKey = "opa-auth-token";
@@ -79,14 +103,18 @@ export default function App() {
       });
   }, [authToken]);
 
+  useEffect(() => {
+    const t = getToken();
+    const r = getRoleFromJWT(t);
+    if (r) setRole(r.toLowerCase());
+    else setRole("promoter");
+  }, []);
+
   return (
     <div style={{ padding: 16, fontFamily: "system-ui" }}>
       <h2>OPA Mini App ✔</h2>
       {authToken ? (
-        <p>
-          Authenticated as: {" "}
-          {user?.tg?.username ? `@${user.tg.username}` : user?.tg?.id || "unknown"}
-        </p>
+        <p>Authenticated as: {role}</p>
       ) : (
         <p style={{ color: "crimson" }}>
           {!authError ? "Awaiting Telegram authorization…" : `Auth error: ${authError}`}
