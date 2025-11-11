@@ -1,5 +1,4 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
@@ -9,16 +8,21 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "src/**/*"
+    "src/server.ts",
+    "src/bot.ts",
+    "src/db.ts",
+    "src/config/**/*",
+    "src/routes/**/*",
+    "src/middleware/**/*",
+    "src/types/**/*"
   ],
   "exclude": [
-    "src/webapp/**/*",
-    "node_modules",
-    "dist",
-    "dist-server",
-    "dist-web"
+    "src/webapp",
+    "src/integrations",
+    "node_modules"
   ]
 }

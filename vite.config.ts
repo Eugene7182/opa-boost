@@ -7,13 +7,18 @@ export default defineConfig({
   root: resolve(__dirname, "src", "webapp"),
   server: {
     host: true,
-    port: 5175,
+    port: 8080,
     strictPort: true,
     allowedHosts: true,
     proxy: { "/api": { target: "http://localhost:3000", changeOrigin: true } }
   },
   build: {
-    outDir: resolve(__dirname, "dist"),
+    outDir: resolve(__dirname, "dist", "webapp"),
     emptyOutDir: true
+  },
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "src", "webapp")
+    }
   }
 })
