@@ -118,14 +118,41 @@ app.post("/api/auth/telegram", async (req, res) => {
       include: { role: true }
     });
 
-    const payload: JwtPayload = {
-      sub: dbUser.id,
-      tg: { id: tg.id, username: tg.username },
-      role: dbUser.role?.name ?? "Promoter",
-      roleId: dbUser.roleId ?? null
-    };
+    // ===== Role assignment patch =====
+    function parseAdminIds(src?: string) {
+      return (src || "")
+        .split(",")
+        .map((s) => s.trim().replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, ""))
+        .filter(Boolean);
+    }
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+    const adminIds = parseAdminIds(process.env.ADMIN_TG_IDS);
+    const isAdmin = adminIds.includes(String(tg.id));
+
+    const [adminRole, promoterRole] = await Promise.all([
+      prisma.role.upsert({ where: { name: "Admin" }, update: {}, create: { name: "Admin" } }),
+      prisma.role.upsert({ where: { name: "Promoter" }, update: {}, create: { name: "Promoter" } })
+    ]);
+
+    let roleName = dbUser.role?.name as "Admin" | "Promoter" | undefined;
+    if (isAdmin && roleName !== "Admin") {
+      await prisma.user.update({ where: { id: dbUser.id }, data: { roleId: adminRole.id } });
+      roleName = "Admin";
+    } else if (!roleName) {
+      await prisma.user.update({ where: { id: dbUser.id }, data: { roleId: promoterRole.id } });
+      roleName = "Promoter";
+    }
+    // ===== End patch =====
+
+    const token = jwt.sign(
+      {
+        sub: dbUser.id,
+        tg: { id: tg.id, username: tg.username },
+        role: roleName
+      },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     return res.json({ ok: true, token });
   } catch (error) {
@@ -163,8 +190,11 @@ app.get("/api/me", auth, async (req: AuthedRequest, res) => {
     ]);
 
     const user = orgUser ?? legacyUser ?? payload;
+    const roleName =
+      (orgUser?.role?.name as OrgRoleName | undefined) ??
+      (typeof payload.role === "string" ? (payload.role as OrgRoleName) : undefined);
 
-    return res.json({ ok: true, user, orgUser, legacyUser });
+    return res.json({ ok: true, user, orgUser, legacyUser, role: roleName ?? null });
   } catch (error) {
     console.error("Failed to load user", error);
     return res.status(500).json({ ok: false, error: "failed to load user" });

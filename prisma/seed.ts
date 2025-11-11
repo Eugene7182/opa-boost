@@ -58,6 +58,11 @@ async function seedOrgModels() {
 }
 
 async function main() {
+  const baseRoles = ["Admin", "Promoter", "Office", "Supervisor", "Trainer"];
+  for (const name of baseRoles) {
+    await db.role.upsert({ where: { name }, update: {}, create: { name } });
+  }
+
   await seedOrgModels();
   await seedLegacyModels();
   console.log("✅ Seeded legacy demo data and org defaults");
